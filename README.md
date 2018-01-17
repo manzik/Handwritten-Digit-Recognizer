@@ -4,4 +4,5 @@ A Deep Neural Network project trained to detect Persian handwritten digits from 
 
 Training process have been done using C++ for faster learning and Hoda (handwritten Farsi digits dataset) have been used to train the network.
 
-An online version is available for testing it interactively in browser (written using javascript).
+Online demo is available for testing trained neural network recognition interactively at URL:
+
