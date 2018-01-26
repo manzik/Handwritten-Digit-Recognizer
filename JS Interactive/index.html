@@ -208,6 +208,12 @@
 
         window.addEventListener("load", () =>
         {
+            var t = setInterval(() => { if (runifloaded()) { clearInterval(t) } },250);
+        });
+        function runifloaded()
+        {
+            if (!netdata)
+                return false;
             c = document.getElementById("c");
             ctx = c.getContext("2d");
 
@@ -263,7 +269,8 @@
                 var touch = e.touches[0];
                 mousemove(touch.clientX, touch.clientY);
             }, false);
-        });
+            return true;
+        }
         function drawdemo(number)
         {
             cbuttonclick();
