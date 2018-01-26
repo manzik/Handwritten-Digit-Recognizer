@@ -210,6 +210,7 @@ function runifloaded()
     {
         var touch = e.touches[0];
         mousemove(touch.clientX, touch.clientY);
+        e.preventDefault();
     }, false);
     return true;
 }
