@@ -6,6 +6,7 @@
             border: solid 1px rgb(86, 209, 255);
             padding: 5px;
         }
+
         button.tool {
             margin-top: 15px !important;
             margin-bottom: 5px !important;
@@ -15,7 +16,7 @@
             color: rgb(108, 204, 241);
             outline: none;
         }
-        
+
             button.tool:hover {
                 transition: 0.2s;
                 padding: 10px;
@@ -24,6 +25,7 @@
                 color: rgb(108, 204, 241);
                 outline: none;
             }
+
             button.tool:active {
                 transition: 0.2s;
                 padding: 10px;
@@ -32,17 +34,19 @@
                 color: rgb(108, 204, 241);
                 outline: none;
             }
+
             button.tool.selected {
                 background-color: rgba(0, 153, 212, 0.58);
                 border: rgba(9,146,198,1) 2px solid;
                 color: rgb(108, 204, 241);
                 outline: none;
             }
-            td > img
-            {
-                height:20px;
-                width:20px;
-            }
+
+        td > img {
+            height: 20px;
+            width: 20px;
+        }
+
         canvas {
             -webkit-touch-callout: none;
             -webkit-user-select: none;
@@ -53,419 +57,10 @@
         }
     </style>
 
-    <script src="netdata.json"></script>
-    <script src="MLP.js"></script>
-    <script>
-        var netdata = undefined, NeuralNetwork = undefined;
-        var lang = "en";
-        function langclick()
-        {
-            if (lang == "en")
-                lang = "fa";
-            else
-                lang = "en";
+    <script src="netdata.json" defer="defer"></script>
+    <script src="MLP.js" defer="defer"></script>
+    <script src="main.js" defer="defer">
 
-            onlangchange();
-        }
-
-        function onlangchange()
-        {
-            if (lang == "fa")
-            {
-                var toolbuttons = document.getElementsByClassName("tool");
-                toolbuttons[0].innerHTML = "پاک کن";
-                toolbuttons[1].innerHTML = "مداد";
-                toolbuttons[2].innerHTML = "خالی کن";
-                toolbuttons[3].innerHTML = "فارسی";
-                document.getElementById("info").innerHTML = `
-            این پروژه شبکه نورونی عمیق آموزش داده شده برای تشخیص اعداد فارسی دست نویس را به نمایش میگذارد
-            <br/><br />
-            کد منبع این پروژه از این آدرس قابل درسترسی است:
-            <br/>
-            <a style="color:rgb(154, 169, 239);font-size:15px;" target="_blank" href="https://github.com/manzik/Persian-Handwritten-Digit-Recognizer">https://github.com/manzik/Persian-Handwritten-Digit-Recognizer</a>
-`;
-            }
-            else
-            {
-                var toolbuttons = document.getElementsByClassName("tool");
-                toolbuttons[0].innerHTML = "Eraser";
-                toolbuttons[1].innerHTML = "Pen";
-                toolbuttons[2].innerHTML = "Clear";
-                toolbuttons[3].innerHTML = "English";
-                document.getElementById("info").innerHTML = `
-            This project demonstrates a deep neural network trained to detect persian numbers that have been trained using C++ for faster learning.
-            <br/><br />
-            Source code for this project is available at:
-            <br/>
-            <a style="color:rgb(154, 169, 239);font-size:15px;" target="_blank" href="https://github.com/manzik/Persian-Handwritten-Digit-Recognizer">https://github.com/manzik/Persian-Handwritten-Digit-Recognizer</a>
-`;
-            }
-        }
-
-        function cbuttonclick()
-        {
-            for (var i = 0; i < 28 * 28; i++)
-            {
-                griddata[i] = 0;
-            }
-
-            rendergrid();
-
-            //var p = mynet.predict(griddata.map(Math.round));
-
-            for (var i = 0, leni = mynet.layers.length; i < leni; i++)
-            {
-                for (var j = 0, lenj = mynet.layers[i].neurons.length; j < lenj; j++)
-                {
-                    mynet.layers[i].neurons[j].value = 0;
-                }
-            }
-        }
-
-        var buttonsstatepen = true;
-        function pbuttonclick()
-        {
-            if (!buttonsstatepen)
-            {
-                buttonsstatepen = true;
-
-                checkpstate();
-            }
-        }
-        function ebuttonclick()
-        {
-            if (buttonsstatepen)
-            {
-                buttonsstatepen = false;
-
-                checkpstate();
-            }
-        }
-
-        function checkpstate()
-        {
-            var bs = document.getElementsByClassName("tool");
-            if (buttonsstatepen)
-            {
-                bs[0].className = "tool";
-                bs[1].className = "tool selected";
-            }
-            else
-            {
-                bs[1].className = "tool";
-                bs[0].className = "tool selected";
-            }
-        }
-        var c, cheight, cwidth;
-        function setsizes()
-        {
-            try
-            {
-                c.width = innerWidth - 225;
-                c.height = innerHeight;
-
-                cheight = c.height;
-                cwidth = c.width;
-            }
-            catch (e)
-            {
-
-            }
-
-            neuronindexes = [];
-            var ih = (innerHeight - 100);
-            for (var i = 0; i < mynet.layers.length; i++)
-            {
-                var layer = mynet.layers[i];
-
-                if (ih / (neuronsradius * 2 + neuronsmargin) < layer.neurons.length)
-                {
-                    var newarr = [];
-                    for (var j = 0, lenj = (ih / (neuronsradius * 2 + neuronsmargin)); j < lenj; j++)
-                    {
-
-                        newarr.push(Math.round(j * (layer.neurons.length / lenj)));
-                    }
-                    neuronindexes.push(newarr);
-                }
-                else
-                {
-                    var newarr = [];
-                    for (var j = 0, lenj = layer.neurons.length; j < lenj; j++)
-                    {
-                        newarr.push(j);
-                    }
-                    neuronindexes.push(newarr);
-                }
-
-
-
-            }
-        }
-        window.addEventListener("resize", () =>
-        {
-            setsizes();
-        });
-
-        window.addEventListener("load", () =>
-        {
-            var t = setInterval(() => { if (runifloaded()) { clearInterval(t) } },250);
-        });
-        function runifloaded()
-        {
-            if (!netdata || !NeuralNetwork)
-                return false;
-            c = document.getElementById("c");
-            ctx = c.getContext("2d");
-
-            ic = document.getElementById("inputc");
-
-            ictx = ic.getContext("2d");
-
-            ic2 = document.getElementById("inputc2");
-            ictx2 = ic.getContext("2d");
-
-            ictx2.strokeStyle = "rgb(9,146,198)";
-
-            for (var i = 0; i < 28 * 28; i++)
-            {
-                griddata[i] = 0;
-            }
-
-            rendergrid();
-
-            numberscount = 10;
-
-            mynet = new NeuralNetwork([28 * 28, 512, 512, numberscount]);
-
-            mynet.loadNet(
-                netdata
-            );
-
-            setsizes();
-            render();
-
-            drawdemo(Math.floor(Math.random() * 10));
-
-            ic.addEventListener("touchstart", function (e)
-            {
-                var touch = e.touches[0];
-                mouseinf.x = touch.clientX;
-                mouseinf.y = touch.clientY;
-                mouseinf.down = true;
-            }, false);
-            window.addEventListener("touchend", function (e)
-            {
-                var touch = e.touches[0];
-                if (touch)
-                {
-                    mouseinf.x = touch.clientX;
-                    mouseinf.y = touch.clientY;
-                }
-                mouseinf.down = false;
-
-            }, false);
-            ic.addEventListener("touchmove", function (e)
-            {
-                var touch = e.touches[0];
-                mousemove(touch.clientX, touch.clientY);
-            }, false);
-            return true;
-        }
-        function drawdemo(number)
-        {
-            cbuttonclick();
-
-            ictx.drawImage(document.getElementById("number" + number), 0, 0, 250, 250);
-
-            var scale = (250 / 28);
-            for (var i = 0; i < 28 * 28; i++)
-            {
-                var x = i % 28 - 1;
-                var y = Math.floor(i / 28) - 1;
-                griddata[i] = ictx.getImageData(x * scale + 28 / 2, y * scale + 28 / 2, 1, 1).data[3] / 255;
-            }
-
-            rendergrid();
-
-            var p = mynet.predict(griddata.map(Math.round));
-        }
-        var griddata = [];
-        function rendergrid()
-        {
-            ictx2.lineWidth = 1;
-            ictx2.strokeStyle = "rgb(9,146,198)";
-            ictx2.clearRect(0, 0, 250, 250);
-            for (var y = 0; y < 28; y++)
-            {
-                for (var x = 0; x < 28; x++)
-                {
-                    var val = griddata[x + 28 * y];
-                    //console.log(val);
-                    var scale = (250 / 28);
-                    ictx2.fillStyle = "rgba(0,253,253," + val + ")";
-                    ictx2.beginPath();
-
-                    ictx2.moveTo(x * scale, y * scale);
-                    ictx2.lineTo(x * scale, (y + 1) * scale);
-                    ictx2.lineTo((x + 1) * scale, (y + 1) * scale);
-                    ictx2.lineTo((x + 1) * scale, y * scale);
-                    ictx2.lineTo(x * scale, y * scale);
-
-                    ictx2.fill();
-                }
-            }
-
-            for (var x = 0; x < 250; x += 250 / 28)
-            {
-                ictx2.beginPath();
-                ictx2.moveTo(Math.round(x) + 0.5, 0);
-                ictx2.lineTo(Math.round(x) + 0.5, 250);
-                ictx2.closePath();
-                ictx2.stroke();
-            }
-
-            for (var y = 0; y < 250; y += 250 / 28)
-            {
-                ictx2.beginPath();
-                ictx2.moveTo(0, Math.round(y) + 0.5);
-                ictx2.lineTo(250, Math.round(y) + 0.5);
-                ictx2.closePath();
-                ictx2.stroke();
-            }
-
-
-        }
-        var mouseinf = { x: 0, y: 0, down: false };
-        
-        window.addEventListener("mousedown", (e) =>
-        {
-            mouseinf.x = e.offsetX;
-            mouseinf.y = e.offsetY;
-            mouseinf.down = true;
-        });
-        var mynet;
-        var neuronsmargin = 5;
-        var neuronsradius = 8;
-        neuronindexes = [];
-        var PI2 = Math.PI * 2;
-        var persiannumbers = "۰۱۲۳۴۵۶۷۸۹";
-        function renderneurons()
-        {
-            var iw = innerWidth - 250;
-            ctx.clearRect(0, 0, iw, innerHeight);
-
-            var neurontotysize = (neuronsradius * 2 + neuronsmargin);
-            ctx.strokeStyle = "rgba(9, 146, 198,0.05)";
-            var ilni = (iw / (neuronindexes.length-0.5));
-            for (var i = 0, leni = neuronindexes.length; i < leni; i++)
-            {
-                for (var j = 0, lenj = neuronindexes[i].length; j < lenj; j++)
-                {
-                    var neuronind = neuronindexes[i][j];
-                    var neuron = mynet.layers[i].neurons[neuronind];
-                    neuron.animationValue -= (neuron.animationValue - neuron.value) / 8;
-
-                    var val = neuron.animationValue;
-                    ctx.beginPath();
-                    ctx.arc(50 + i * ilni, (innerHeight) / 2 + neurontotysize * (j - lenj / 2), neuronsradius, 0, PI2);
-                    ctx.closePath();
-                    ctx.fillStyle = "rgba(9,146,198," + val + ")";
-                    ctx.fill();
-                    ctx.stroke();
-
-                    if (i == leni - 1)
-                    {
-                        ctx.font = ((lang == "en" ?1 : 2)*neuronsradius*(1+val/2)) + "px Arial";
-                        ctx.fillText(lang == "en" ? String(j) : persiannumbers[j], 50 + i * ilni + neuronsradius * 2, neuronsradius / 2 + (innerHeight) / 2 + neurontotysize * (j - lenj / 2));
-                    }
-                }
-            }
-            var ilni2 = (iw / (leni - 0.5));
-            for (var i = 0, leni = neuronindexes.length; i < leni - 1; i++)
-            {
-                for (var j = 0, lenj = neuronindexes[i].length; j < lenj; j++)
-                {
-                    for (var j2 = 0, lenj2 = neuronindexes[i + 1].length; j2 < lenj2; j2++)
-                    {
-                        var neuronind = neuronindexes[i][j];
-
-                        var val = mynet.layers[i].neurons[neuronind].animationValue;
-
-                        var weight = mynet.layers[i].neurons[neuronind].weights[neuronindexes[i + 1][j2]];
-
-
-                        ctx.beginPath();
-                        ctx.moveTo(50 + i * ilni2, (innerHeight) / 2 + neurontotysize * j - neurontotysize * lenj / 2);
-                        ctx.lineTo(50 + (i + 1) * ilni2, (innerHeight) / 2 + neurontotysize * (j2) - neurontotysize * neuronindexes[i + 1].length / 2)
-                        ctx.closePath();
-                        ctx.strokeStyle = "rgba(9, 146, 198," + (weight * val * mynet.layers[i + 1].neurons[neuronindexes[i + 1][j2]].animationValue) + ")";
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
-        window.addEventListener("mouseup", (e) =>
-        {
-            mouseinf.x = e.offsetX;
-            mouseinf.y = e.offsetY;
-            mouseinf.down = false;
-
-        });
-        window.addEventListener("mousemove", (e) =>
-        {
-            mousemove(e.offsetX, e.offsetY);
-        });
-
-        function mousemove(newx,newy)
-        {
-            if (mouseinf.down && mouseinf.x <= ic.width && mouseinf.y <= ic.height)
-            {
-                ictx.save();
-                if (buttonsstatepen)
-                {
-                    ictx.globalCompositeOperation = "";
-                }
-                else
-                {
-                    ictx.globalCompositeOperation = "destination-out";
-                }
-                ictx.filter = "blur(1px)";
-                ictx.lineWidth = 40;
-                ictx.strokeStyle = "rgb(9,146,198)";
-                ictx.lineJoin = "round";
-                ictx.lineCap = "round";
-                ictx.beginPath();
-                ictx.moveTo(mouseinf.x, mouseinf.y);
-                mouseinf.x = newx;
-                mouseinf.y = newy;
-
-                ictx.lineTo(mouseinf.x, mouseinf.y);
-                ictx.closePath();
-                ictx.stroke();
-                ictx.restore();
-                var scale = (250 / 28);
-                for (var i = 0; i < 28 * 28; i++)
-                {
-                    var x = i % 28 - 1;
-                    var y = Math.floor(i / 28) - 1;
-                    griddata[i] = ictx.getImageData(x * scale + 28 / 2, y * scale + 28 / 2, 1, 1).data[3] / 255;
-                }
-
-                rendergrid();
-
-                var p = mynet.predict(griddata.map(Math.round));
-                //renderneurons();
-            }
-        }
-
-        function render()
-        {
-            renderneurons()
-            //ctx.fillStyle = "rgb(1,19,27)";
-            //ctx.fillRect(0, 0, cwidth, cheight);
-            requestAnimationFrame(render);
-        }
     </script>
 
 </head>
@@ -480,15 +75,15 @@
         <canvas height="250" width="250" id="inputc" style="border:ridge rgb(9,146,198) 1px;position:absolute;left:-2px;top:0;"></canvas>
         <button style="top:250px;position:relative;margin:30px;" class="tool" onclick="ebuttonclick();">Eraser</button>
         <button style="top:250px;position:relative;margin:30px;width:60px" class="tool selected" onclick="pbuttonclick();">Pen</button>
-        <button style="top:250px;position:relative;margin:30px;left:50px;width:75px;" class="tool" onclick="cbuttonclick();">Clear</button><br/>
+        <button style="top:250px;position:relative;margin:30px;left:50px;width:75px;" class="tool" onclick="cbuttonclick();">Clear</button><br />
         <span style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;padding:0px;position:relative;color:rgb(86, 209, 255);top:280px;left:5px;width:220px;word-break:break-word;word-wrap:break-word;" id="info">
             This project demonstrates a deep neural network trained to detect persian numbers that have been trained using C++ for faster learning.
-            <br/><br />
+            <br /><br />
             Source code for this project is available at:
-            <br/>
+            <br />
             <a style="color:rgb(154, 169, 239);font-size:15px;" target="_blank" href="https://github.com/manzik/Persian-Handwritten-Digit-Recognizer">https://github.com/manzik/Persian-Handwritten-Digit-Recognizer</a>
         </span>
-        <table  style="font-size:20px;text-align:center;top:300px;left:0px;position:relative;margin:10px;color:rgb(86, 209, 255);border-collapse: collapse;" border = "1">
+        <table style="font-size:20px;text-align:center;top:300px;left:0px;position:relative;margin:10px;color:rgb(86, 209, 255);border-collapse: collapse;" border="1">
             <tr>
                 <td onclick="drawdemo(parseInt(this.innerHTML))">0</td>
                 <td onclick="drawdemo(parseInt(this.innerHTML))">1</td>
@@ -502,19 +97,19 @@
                 <td onclick="drawdemo(parseInt(this.innerHTML))">9</td>
             </tr>
             <tr>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/0.png"/></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/1.png"/></td>
+                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/0.png" /></td>
+                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/1.png" /></td>
                 <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/2.png" /></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/3.png"/></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/4.png"/></td>
+                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/3.png" /></td>
+                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/4.png" /></td>
                 <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/5.png" /></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/6.png"/></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/7.png"/></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/8.png"/></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/9.png"/></td>
+                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/6.png" /></td>
+                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/7.png" /></td>
+                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/8.png" /></td>
+                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/9.png" /></td>
             </tr>
         </table>
-        <button  style="top:325px;left:50px;position:relative;margin:30px; width:75px;" class="tool" onclick="langclick()">English</button>
+        <button style="top:325px;left:50px;position:relative;margin:30px; width:75px;" class="tool" onclick="langclick()">English</button>
     </div>
     <div style="display:none;">
         <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAA5z2lUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4KPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS41LWMwMjEgNzkuMTU0OTExLCAyMDEzLzEwLzI5LTExOjQ3OjE2ICAgICAgICAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iCiAgICAgICAgICAgIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIgogICAgICAgICAgICB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlRXZlbnQjIgogICAgICAgICAgICB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iCiAgICAgICAgICAgIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIKICAgICAgICAgICAgeG1sbnM6dGlmZj0iaHR0cDovL25zLmFkb2JlLmNvbS90aWZmLzEuMC8iCiAgICAgICAgICAgIHhtbG5zOmV4aWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vZXhpZi8xLjAvIj4KICAgICAgICAgPHhtcDpDcmVhdG9yVG9vbD5BZG9iZSBQaG90b3Nob3AgQ0MgKFdpbmRvd3MpPC94bXA6Q3JlYXRvclRvb2w+CiAgICAgICAgIDx4bXA6Q3JlYXRlRGF0ZT4yMDE4LTAxLTI2VDE5OjM0OjIwKzAzOjMwPC94bXA6Q3JlYXRlRGF0ZT4KICAgICAgICAgPHhtcDpNZXRhZGF0YURhdGU+MjAxOC0wMS0yNlQxOTozNDoyMCswMzozMDwveG1wOk1ldGFkYXRhRGF0ZT4KICAgICAgICAgPHhtcDpNb2RpZnlEYXRlPjIwMTgtMDEtMjZUMTk6MzQ6MjArMDM6MzA8L3htcDpNb2RpZnlEYXRlPgogICAgICAgICA8eG1wTU06SW5zdGFuY2VJRD54bXAuaWlkOmVhNzI1YWY3LWFhNGYtYWI0OS1iNTU3LWFmYWJlZjUzZGVjYzwveG1wTU06SW5zdGFuY2VJRD4KICAgICAgICAgPHhtcE1NOkRvY3VtZW50SUQ+eG1wLmRpZDpiODg5ZDZhZS1iZTNlLTM2NDAtYWRmMC1lMjNkZDRhZjY3MTk8L3htcE1NOkRvY3VtZW50SUQ+CiAgICAgICAgIDx4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ+eG1wLmRpZDpiODg5ZDZhZS1iZTNlLTM2NDAtYWRmMC1lMjNkZDRhZjY3MTk8L3htcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD4KICAgICAgICAgPHhtcE1NOkhpc3Rvcnk+CiAgICAgICAgICAgIDxyZGY6U2VxPgogICAgICAgICAgICAgICA8cmRmOmxpIHJkZjpwYXJzZVR5cGU9IlJlc291cmNlIj4KICAgICAgICAgICAgICAgICAgPHN0RXZ0OmFjdGlvbj5jcmVhdGVkPC9zdEV2dDphY3Rpb24+CiAgICAgICAgICAgICAgICAgIDxzdEV2dDppbnN0YW5jZUlEPnhtcC5paWQ6Yjg4OWQ2YWUtYmUzZS0zNjQwLWFkZjAtZTIzZGQ0YWY2NzE5PC9zdEV2dDppbnN0YW5jZUlEPgogICAgICAgICAgICAgICAgICA8c3RFdnQ6d2hlbj4yMDE4LTAxLTI2VDE5OjM0OjIwKzAzOjMwPC9zdEV2dDp3aGVuPgogICAgICAgICAgICAgICAgICA8c3RFdnQ6c29mdHdhcmVBZ2VudD5BZG9iZSBQaG90b3Nob3AgQ0MgKFdpbmRvd3MpPC9zdEV2dDpzb2Z0d2FyZUFnZW50PgogICAgICAgICAgICAgICA8L3JkZjpsaT4KICAgICAgICAgICAgICAgPHJkZjpsaSByZGY6cGFyc2VUeXBlPSJSZXNvdXJjZSI+CiAgICAgICAgICAgICAgICAgIDxzdEV2dDphY3Rpb24+c2F2ZWQ8L3N0RXZ0OmFjdGlvbj4KICAgICAgICAgICAgICAgICAgPHN0RXZ0Omluc3RhbmNlSUQ+eG1wLmlpZDplYTcyNWFmNy1hYTRmLWFiNDktYjU1Ny1hZmFiZWY1M2RlY2M8L3N0RXZ0Omluc3RhbmNlSUQ+CiAgICAgICAgICAgICAgICAgIDxzdEV2dDp3aGVuPjIwMTgtMDEtMjZUMTk6MzQ6MjArMDM6MzA8L3N0RXZ0OndoZW4+CiAgICAgICAgICAgICAgICAgIDxzdEV2dDpzb2Z0d2FyZUFnZW50PkFkb2JlIFBob3Rvc2hvcCBDQyAoV2luZG93cyk8L3N0RXZ0OnNvZnR3YXJlQWdlbnQ+CiAgICAgICAgICAgICAgICAgIDxzdEV2dDpjaGFuZ2VkPi88L3N0RXZ0OmNoYW5nZWQ+CiAgICAgICAgICAgICAgIDwvcmRmOmxpPgogICAgICAgICAgICA8L3JkZjpTZXE+CiAgICAgICAgIDwveG1wTU06SGlzdG9yeT4KICAgICAgICAgPGRjOmZvcm1hdD5pbWFnZS9wbmc8L2RjOmZvcm1hdD4KICAgICAgICAgPHBob3Rvc2hvcDpDb2xvck1vZGU+MzwvcGhvdG9zaG9wOkNvbG9yTW9kZT4KICAgICAgICAgPHRpZmY6T3JpZW50YXRpb24+MTwvdGlmZjpPcmllbnRhdGlvbj4KICAgICAgICAgPHRpZmY6WFJlc29sdXRpb24+NzIwMDAwLzEwMDAwPC90aWZmOlhSZXNvbHV0aW9uPgogICAgICAgICA8dGlmZjpZUmVzb2x1dGlvbj43MjAwMDAvMTAwMDA8L3RpZmY6WVJlc29sdXRpb24+CiAgICAgICAgIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgICAgICAgIDxleGlmOkNvbG9yU3BhY2U+NjU1MzU8L2V4aWY6Q29sb3JTcGFjZT4KICAgICAgICAgPGV4aWY6UGl4ZWxYRGltZW5zaW9uPjUwPC9leGlmOlBpeGVsWERpbWVuc2lvbj4KICAgICAgICAgPGV4aWY6UGl4ZWxZRGltZW5zaW9uPjUwPC9leGlmOlBpeGVsWURpbWVuc2lvbj4KICAgICAgPC9yZGY6RGVzY3JpcHRpb24+CiAgIDwvcmRmOlJERj4KPC94OnhtcG1ldGE+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgCjw/eHBhY2tldCBlbmQ9InciPz6npRNXAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAJZSURBVHja7NlPiE1hGMfxz/iTSCkySTRIkT8naUJiip0UkTokKdnJlo2wMDtLWSgbFGeFhVloWJAUSh1jJiMpfzYSEkpibF41XfeMmXvnnrmN97e53efc93363vO8z59zWgYGBowHTTBOFEEiSASJIBEkgkSQ8QQyqd4N0vwv0zosx3zcxiN8K1qfJU0CMkhnsB3zBtlO4Ate4SG6calZQ2sF+nCoAuKPpmMZ9uMicuxrKpA0tw1PsHQEy1biAu5i8ZiDpLmDuF6H7w14nuZ2jAZISy2DVZprDzE/WtqZJa6OBchbzC24/Dwc8mlYHcKnHTP/se3iLPGitKyV5rYMAXENu/AzfD8fPqfgMI5gdsHabiws84wcKLCfw45BEIP1HafRFmCraUGaO1pKaKW5llATKtPsB8wagd/L2F1wbUmW6G/0HWkrqBU3RrjPHrwvuLa/jNDqKLDfq8H33oIwXF0GyIwCe38Nvm/iZRV7axkgRQfqVw2+14ZQrdS7MkB6C+zHa/DdhclV7C/LAHlcYN+M+5g4zNp1d4gC2dlwkCzxMTR81bQOPaHTLdIWPAt9VjWdyhJvS2lR0tzsYcTx2dCqfMbUcIA3YtMQa/qyZMg/oSG9VgdujeJg9hNzsqSwtjSmjc8Sd7CqxmxVLROurweirnkkSzwNQ9KbOvz3IckSD8Z0QswSvWE6vFDDXejEsizR0ywz+9fQH23FFXwq+N33kLFOYhGONdXjoIoC14U1Ya5oDQ8efoQs9xovQvc86mqJ7xAjSASJIBEkgkSQCBJBIsh/A/J7AFL1iv7GJdawAAAAAElFTkSuQmCC" id="number0" />
