@@ -286,7 +286,8 @@ class Neuron
         this.index = index;
         this.parent = parent;
         this.value = 0;
-        this.animationValue = 0;
+        this.groupAnimationValue = 0;
+        this.groupValue=0;
         this.V = 0;
         this.K = 0
     }
