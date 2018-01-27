@@ -1,4 +1,4 @@
-﻿var lang = "en";
+var lang = "en";
 function langclick()
 {
     if (lang == "en")
@@ -287,8 +287,8 @@ window.addEventListener("mousedown", (e) =>
     mouseinf.down = true;
 });
 var mynet;
-var neuronsmargin = 5;
-var neuronsradius = 8;
+var neuronsmargin = 2;
+var neuronsradius = 9;
 neuronindexes = [];
 var PI2 = Math.PI * 2;
 var persiannumbers = "۰۱۲۳۴۵۶۷۸۹";
@@ -304,15 +304,30 @@ function renderneurons()
     {
         for (var j = 0, lenj = neuronindexes[i].length; j < lenj; j++)
         {
+            if(!this.z)
+            {
+                this.z=true;
+                console.log(neuronindexes);
+            }
             var neuronind = neuronindexes[i][j];
+            var val=mynet.layers[i].neurons[neuronind].value;
+            var ind=neuronind;
+            /*
+            for(var k=neuronind;k<((j+1<lenj)?neuronindexes[i][j+1]:neuronind+1);k++)
+            {
+                val+=mynet.layers[i].neurons[true?k:neuronind].value;
+            }
+            val/=(neuronindexes[i][j+1]-neuronind)||1;
+            */
             var neuron = mynet.layers[i].neurons[neuronind];
-            neuron.animationValue -= (neuron.animationValue - neuron.value) / 8;
+            neuron.groupValue=val;
+            neuron.groupAnimationValue -= (neuron.groupAnimationValue - neuron.groupValue) / 8;
 
-            var val = neuron.animationValue;
+            var val = neuron.groupAnimationValue;
             ctx.beginPath();
             ctx.arc(50 + i * ilni, (innerHeight) / 2 + neurontotysize * (j - lenj / 2), neuronsradius, 0, PI2);
             ctx.closePath();
-            ctx.fillStyle = "rgba(9,146,198," + val + ")";
+            ctx.fillStyle = "rgba(9,146,198," + (val) + ")";
             ctx.fill();
             ctx.stroke();
 
@@ -324,15 +339,25 @@ function renderneurons()
         }
     }
     var ilni2 = (iw / (leni - 0.5));
+    /*
+    var neuroncountindratio=[];
+    for(var i=0;i<neuronindexes.length;i++)
+    {
+        var rval=mynet.layers[i].neurons/neuronindexes[i].length;
+        neuroncountindratio.push(rval);
+    }
+    */
     for (var i = 0, leni = neuronindexes.length; i < leni - 1; i++)
     {
         for (var j = 0, lenj = neuronindexes[i].length; j < lenj; j++)
         {
+
+            var neuronind = neuronindexes[i][j];
+
+            var val = mynet.layers[i].neurons[neuronind].groupAnimationValue;
+
             for (var j2 = 0, lenj2 = neuronindexes[i + 1].length; j2 < lenj2; j2++)
             {
-                var neuronind = neuronindexes[i][j];
-
-                var val = mynet.layers[i].neurons[neuronind].animationValue;
 
                 var weight = mynet.layers[i].neurons[neuronind].weights[neuronindexes[i + 1][j2]];
 
@@ -341,7 +366,7 @@ function renderneurons()
                 ctx.moveTo(50 + i * ilni2, (innerHeight) / 2 + neurontotysize * j - neurontotysize * lenj / 2);
                 ctx.lineTo(50 + (i + 1) * ilni2, (innerHeight) / 2 + neurontotysize * (j2) - neurontotysize * neuronindexes[i + 1].length / 2)
                 ctx.closePath();
-                ctx.strokeStyle = "rgba(9, 146, 198," + (weight * val * mynet.layers[i + 1].neurons[neuronindexes[i + 1][j2]].animationValue) + ")";
+                ctx.strokeStyle = "rgba(9, 146, 198," + (Math.max(0,weight) * val * mynet.layers[i + 1].neurons[neuronindexes[i + 1][j2]].groupAnimationValue) + ")";
                 ctx.stroke();
             }
         }
@@ -373,7 +398,7 @@ function mousemove(newx, newy)
             ictx.globalCompositeOperation = "destination-out";
         }
         ictx.filter = "blur(1px)";
-        ictx.lineWidth = 40;
+        ictx.lineWidth = 30;
         ictx.strokeStyle = "rgb(9,146,198)";
         ictx.lineJoin = "round";
         ictx.lineCap = "round";
