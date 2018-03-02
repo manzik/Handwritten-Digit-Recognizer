@@ -5,25 +5,13 @@
 
 
 #include <windows.h>
-//#include "stdafx.h"
-//#include <atlimage.h>
-//#include <atlstr.h>
-#include <minwindef.h>
 #include <iostream>
 #include <conio.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <time.h>
-#include <chrono>
-#include <thread>
 #include <fstream>
-#include <string> 
-#include <iostream>
 #include <string>
-#include <iomanip>
 #include <math.h>
-#include <sstream>
-#include "GNN.cpp"
+#include "MLP.cpp"
 
 using namespace std;
 
@@ -47,7 +35,7 @@ struct CSample
 	BYTE* Data;
 };
 
-GeneralNeuralNetwork mygnn;
+MultilayerPerceptron mynet;
 double predc = 0;
 CSample *Samples;
 byte imgType;
@@ -67,40 +55,36 @@ void ReadRamFile(void* Buffer, int ByteCount)
 int counterd = 0;
 void Teach(double *data, int datacount, int answer)
 {
-	//mygnn.LearningRate *= 0.99995;
+	//mynet.LearningRate *= 0.99995;
 	int inputlen = datacount;
 
-	mygnn.ClearUp();
+	mynet.ClearUp();
 	for (int i = 0; i < inputlen; i++)
 	{
-		mygnn.SetNeuronValue(i, data[i]);
+		mynet.SetNeuronValue(i, data[i]);
 	}
 
 
-	mygnn.ComputeOutput();
+	mynet.ComputeOutput();
 	/*
 	double TotalSum=0;
 	for (int i = 0; i < 10; i++)
 			{
-				TotalSum+=exp(mygnn.GetNeuronValue(mygnn.NeuronsSize - 10 + i));
+				TotalSum+=exp(mynet.GetNeuronValue(mynet.NeuronsSize - 10 + i));
 			}
 	*/
-	int maxind = 0, maxval = 0;
+	double err = 0;
 	for (int i = 0; i < 10; i++)
 	{
-		if (maxval < mygnn.GetNeuronValue(mygnn.NeuronsSize - 10 + i))
-		{
-			maxval = mygnn.GetNeuronValue(mygnn.NeuronsSize - 10 + i);
-			maxind = i;
-		}
 		
+		err += abs((i==answer?1:0)-mynet.GetNeuronValue(mynet.NeuronsSize - 10 + i));
 	}
-	predc += abs((maxind != answer) ? 1 : 0) / 1;
+	predc += err/10;
 	if (counterd % 100 == 0)
 	{
 		for (int i = 0; i < 10; i++)
 		{
-			cout << mygnn.GetNeuronValue(mygnn.NeuronsSize - 10 + i) << " ";
+			cout << mynet.GetNeuronValue(mynet.NeuronsSize - 10 + i) << " ";
 
 			//cout << ((maxind == answer) ? "True" : "False") << " " << counterd << "\n";
 		}
@@ -114,37 +98,37 @@ void Teach(double *data, int datacount, int answer)
 
 	for (int i = 0; i < dosslen; i++)
 	{
-		dos[i] = new DesiredOutput(mygnn.NeuronsSize - 10 + i, ((i == answer) ? 1 : 0));
+		dos[i] = new DesiredOutput(mynet.NeuronsSize - 10 + i, ((i == answer) ? 1 : 0));
 	}
 
-	mygnn.BackPropagate(dos, dosslen, false);
+	mynet.BackPropagate(dos, dosslen, false);
 
-	//mygnn.LearningRate *= 0.99993;
+	//mynet.LearningRate *= 0.99993;
 
 	if (counterd % 1000 == 0)
 	{
 		string netdata = "[";
-		for (int i = 0; i < mygnn.ConnectionsSize; i++)
+		for (int i = 0; i < mynet.ConnectionsSize; i++)
 		{
-			netdata += std::to_string((mygnn.Connections[i])->Weight) + ",";
+			netdata += std::to_string((mynet.Connections[i])->Weight) + ",";
 		}
 
 		netdata = netdata.substr(0, netdata.length() - 1) + "]";
 
 		std::ofstream outfile;
 
-		outfile.open("netdata.txt", std::ios_base::trunc);//std::ios_base::app
+		outfile.open("netdata.txt", std::ios_base::trunc);
 		outfile << netdata;
 
-		cout << (predc / 1000) * 100 << " " << counterd << "\n";
-		//cin >> mygnn.LearningRate;
+		cout << "Error: "<<(predc / 1000) * 100 << "%\nSamples Seen: " << counterd << "\n";
+		//cin >> mynet.LearningRate;
 		predc = 0;
 	}
 	counterd++;
 }
 
 
-
+// Function from samples of http://farsiocr.ir/%D9%85%D8%AC%D9%85%D9%88%D8%B9%D9%87-%D8%AF%D8%A7%D8%AF%D9%87/%D9%85%D8%AC%D9%85%D9%88%D8%B9%D9%87-%D8%A7%D8%B1%D9%82%D8%A7%D9%85-%D8%AF%D8%B3%D8%AA%D9%86%D9%88%DB%8C%D8%B3-%D9%87%D8%AF%DB%8C/
 void ReadData(string FileName)
 {
 	counterd = 0;
@@ -281,7 +265,7 @@ int main()
 
 	srand(time(NULL));
 
-	mygnn = GeneralNeuralNetwork();
+	mynet = MultilayerPerceptron();
 	int NeuronLayersCount = 4;
 	int NeuronLayers[4] = { 28 * 28,512,512,10 };
 	int sum = 0;
@@ -292,7 +276,7 @@ int main()
 	cout << sum << "\n";
 
 
-	mygnn.CreateNeurons(sum);
+	mynet.CreateNeurons(sum);
 
 	int index = 0;
 
@@ -317,7 +301,7 @@ int main()
 				//
 
 
-				mygnn.ConnectNeurons(j, k, inp);
+				mynet.ConnectNeurons(j, k, inp);
 
 			}
 		}
@@ -331,7 +315,6 @@ int main()
 	ReadData("Train 60000.cdb");
 	ReadData("Train 60000.cdb");
 	ReadData("Train 60000.cdb");
-	std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 
 
 

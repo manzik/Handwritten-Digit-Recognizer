@@ -5,7 +5,7 @@
 
 using namespace std;
 
-class GeneralNeuralNetwork;
+class MultilayerPerceptron;
 class Neuron;
 class Connection;
 
@@ -53,14 +53,14 @@ public:
 	double value = 0;
 };
 
-class GeneralNeuralNetwork
+class MultilayerPerceptron
 {
 public:
 	Neuron *Neurons;
 	int NeuronsSize = 0;
 	vector<Connection*> Connections;
 	int ConnectionsSize = 0;
-	GeneralNeuralNetwork()
+	MultilayerPerceptron()
 	{
 	}
 
