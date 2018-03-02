@@ -675,4 +675,7 @@ class Neuron
         return this.parent;
     }
 }
+<<<<<<< HEAD
 */
+=======
+>>>>>>> de92a2fd9ad65aa0ed16d03acc1cb3242ea04718

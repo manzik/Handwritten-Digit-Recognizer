@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 ﻿var lang = "en";
 var mynet;
+=======
+var lang = "en";
+>>>>>>> de92a2fd9ad65aa0ed16d03acc1cb3242ea04718
 function langclick()
 {
     if (lang == "en")
