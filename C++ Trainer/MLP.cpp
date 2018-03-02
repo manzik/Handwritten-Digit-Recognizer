@@ -151,26 +151,26 @@ public:
 		}
 	}
 	double LearningRate = 0.2;
-	void BackPropagate(DesiredOutput **DesiredOutputs, int DesiredOutputsLength,bool Softmax)
+	void BackPropagate(DesiredOutput **DesiredOutputs, int DesiredOutputsLength, bool Softmax)
 	{
-double TotalSum=0;
-if(Softmax)
-{
-		for (int i = 0; i < DesiredOutputsLength; i++)
+		double TotalSum = 0;
+		if (Softmax)
 		{
-			DesiredOutput &DO = *(DesiredOutputs[i]);
-			Neuron &TargetNeuron = Neurons[DO.index];
-			TotalSum+=TargetNeuron.Value;
+			for (int i = 0; i < DesiredOutputsLength; i++)
+			{
+				DesiredOutput &DO = *(DesiredOutputs[i]);
+				Neuron &TargetNeuron = Neurons[DO.index];
+				TotalSum += TargetNeuron.Value;
+			}
 		}
-}
 		for (int i = 0; i < DesiredOutputsLength; i++)
 		{
 			DesiredOutput &DO = *(DesiredOutputs[i]);
 			Neuron &TargetNeuron = Neurons[DO.index];
-if(Softmax)
-TargetNeuron.J = (DO.value - TargetNeuron.Value/TotalSum)/TotalSum;
-else
-			TargetNeuron.J = SigmoidDerivative(TargetNeuron.V)*(DO.value - TargetNeuron.Value);
+			if (Softmax)
+				TargetNeuron.J = (DO.value - TargetNeuron.Value / TotalSum) / TotalSum;
+			else
+				TargetNeuron.J = SigmoidDerivative(TargetNeuron.V)*(DO.value - TargetNeuron.Value);
 		}
 		for (int i = NeuronsSize - 1; i >= 0; i--)
 		{

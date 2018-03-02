@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-﻿var lang = "en";
-var mynet;
-=======
 var lang = "en";
->>>>>>> de92a2fd9ad65aa0ed16d03acc1cb3242ea04718
+var mynet;
 function langclick()
 {
     if (lang == "en")
@@ -136,14 +132,14 @@ function setsizes()
 
     }
 }
-window.addEventListener("resize", function()
+window.addEventListener("resize", function ()
 {
     setsizes();
 });
 
-window.addEventListener("load", function()
+window.addEventListener("load", function ()
 {
-    var t = setInterval(function() { if (runifloaded()) { clearInterval(t) } }, 250);
+    var t = setInterval(function () { if (runifloaded()) { clearInterval(t) } }, 250);
 });
 function runifloaded()
 {
@@ -273,7 +269,7 @@ function rendergrid()
 }
 var mouseinf = { x: 0, y: 0, down: false };
 
-window.addEventListener("mousedown", function(e)
+window.addEventListener("mousedown", function (e)
 {
     mouseinf.x = e.offsetX;
     mouseinf.y = e.offsetY;
@@ -297,14 +293,14 @@ function renderneurons()
     {
         for (var j = 0, lenj = neuronindexes[i].length; j < lenj; j++)
         {
-            if(!this.z)
+            if (!this.z)
             {
-                this.z=true;
+                this.z = true;
                 console.log(neuronindexes);
             }
             var neuronind = neuronindexes[i][j];
-            var val=mynet.layers[i].neurons[neuronind].value;
-            var ind=neuronind;
+            var val = mynet.layers[i].neurons[neuronind].value;
+            var ind = neuronind;
             /*
             for(var k=neuronind;k<((j+1<lenj)?neuronindexes[i][j+1]:neuronind+1);k++)
             {
@@ -313,7 +309,7 @@ function renderneurons()
             val/=(neuronindexes[i][j+1]-neuronind)||1;
             */
             var neuron = mynet.layers[i].neurons[neuronind];
-            neuron.groupValue=val;
+            neuron.groupValue = val;
             neuron.groupAnimationValue -= (neuron.groupAnimationValue - neuron.groupValue) / 8;
 
             var val = neuron.groupAnimationValue;
@@ -359,7 +355,7 @@ function renderneurons()
                 ctx.moveTo(50 + i * ilni2, (innerHeight) / 2 + neurontotysize * j - neurontotysize * lenj / 2);
                 ctx.lineTo(50 + (i + 1) * ilni2, (innerHeight) / 2 + neurontotysize * (j2) - neurontotysize * neuronindexes[i + 1].length / 2)
                 ctx.closePath();
-                ctx.strokeStyle = "rgba(9, 146, 198," + (Math.max(0,weight) * val * mynet.layers[i + 1].neurons[neuronindexes[i + 1][j2]].groupAnimationValue) + ")";
+                ctx.strokeStyle = "rgba(9, 146, 198," + (Math.max(0, weight) * val * mynet.layers[i + 1].neurons[neuronindexes[i + 1][j2]].groupAnimationValue) + ")";
                 ctx.stroke();
             }
         }

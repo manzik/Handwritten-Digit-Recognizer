@@ -2,7 +2,7 @@
 Downgraded from ES6 to ES5 for more compatibility
 */
 
-NeuralNetwork=function(sizes)
+NeuralNetwork = function (sizes)
 {
     var dis = this;
     this.learningrate = 0.3;
@@ -14,13 +14,13 @@ NeuralNetwork=function(sizes)
     }
     this.errors = { i: 0, value: 0, percent: 0 };
 
-    this.loadNet=function(arr_weights)
+    this.loadNet = function (arr_weights)
     {
         var iii = 0;
 
-        this.layers.forEach(function(layer)
+        this.layers.forEach(function (layer)
         {
-            layer.neurons.forEach(function(neuron)
+            layer.neurons.forEach(function (neuron)
             {
                 for (var i = 0; i < neuron.weights.length; i++)
                 {
@@ -29,34 +29,34 @@ NeuralNetwork=function(sizes)
             });
         });
     }
-    this.startAutoRendering=function()
+    this.startAutoRendering = function ()
     {
-        setInterval(function(){ this.render(); }, 100);
+        setInterval(function () { this.render(); }, 100);
     }
-    this.render=function()
+    this.render = function ()
     {
         var ctx = this.ctx;
 
         var netlist = this.getAsList();
         var xspace = 70;
         var yspace = 70;
-        var maxlen = netlist.map(function(x) { return x.length }).reduce(function(a, b) { return Math.max(a, b) }, 1);
+        var maxlen = netlist.map(function (x) { return x.length }).reduce(function (a, b) { return Math.max(a, b) }, 1);
 
         ctx.clearRect(0, 0, innerWidth, innerHeight)
-        netlist.forEach(function(layer, i)
+        netlist.forEach(function (layer, i)
         {
-            layer.forEach(function(neuron, j)
+            layer.forEach(function (neuron, j)
             {
                 neuron.cx = (i + 0.5) * xspace;
                 neuron.cy = (j + (maxlen - layer.length) / 2 + 0.5) * yspace;
             });
         });
-        netlist.forEach(function(layer, i)
+        netlist.forEach(function (layer, i)
         {
-            layer.forEach(function(neuron, j) 
+            layer.forEach(function (neuron, j) 
             {
 
-                neuron.weights.forEach(function(weight, j2)
+                neuron.weights.forEach(function (weight, j2)
                 {
                     ctx.beginPath();
                     ctx.moveTo(neuron.cx, neuron.cy);
@@ -81,9 +81,9 @@ NeuralNetwork=function(sizes)
 
             ctx.fillText(String(this.errors.percent), 20, 20);
         });
-        netlist.forEach(function(layer, i)
+        netlist.forEach(function (layer, i)
         {
-            layer.forEach(function(neuron, j)
+            layer.forEach(function (neuron, j)
             {
                 ctx.beginPath();
                 var cx = neuron.cx;//(i+0.5)*xspace;
@@ -107,13 +107,13 @@ NeuralNetwork=function(sizes)
             })
         });
     }
-    this.setCanvas=function(c)
+    this.setCanvas = function (c)
     {
         this.c = c;
         this.ctx = c.getContext("2d");
     }
 
-    this.predict=function(inputs)
+    this.predict = function (inputs)
     {
         // console.log(this.sizes[0])
         if (inputs.length != this.sizes[0])
@@ -127,22 +127,22 @@ NeuralNetwork=function(sizes)
             this.layers[0].neurons[i].value = inputs[i];
         }
 
-        this.layers.forEach(function(layer, i)
+        this.layers.forEach(function (layer, i)
         {
             if (i > 0)
-                layer.neurons.forEach(function(neuron, j)
+                layer.neurons.forEach(function (neuron, j)
                 {
-                    neuron.value = neuron.getPrevLayer().neurons.map(function(prevneuron){ return prevneuron.value * prevneuron.getNextWeight(j) }).reduce(function(a, b) { return a + b }, 0);
+                    neuron.value = neuron.getPrevLayer().neurons.map(function (prevneuron) { return prevneuron.value * prevneuron.getNextWeight(j) }).reduce(function (a, b) { return a + b }, 0);
                     neuron.V = neuron.value;
                     neuron.value = dis.sigmoid(neuron.value);
                 });
         });
         var netlist = this.getAsList();
-        var outputs = netlist[netlist.length - 1].map(function(x) { return x.value });
+        var outputs = netlist[netlist.length - 1].map(function (x) { return x.value });
         return outputs;
     }
 
-    this.learn=function(wantedoutputs)
+    this.learn = function (wantedoutputs)
     {
         // console.log(wantedoutputs.matrix)
         if (wantedoutputs.length != this.sizes[this.sizes.length - 1])
@@ -150,11 +150,11 @@ NeuralNetwork=function(sizes)
 
         this.wantedoutputs = wantedoutputs;
         var netlist = this.getAsList();
-        var outputs = netlist[netlist.length - 1].map(function(x) { return x.value });
+        var outputs = netlist[netlist.length - 1].map(function (x) { return x.value });
 
         var error = 0;
         //console.log(JSON.stringify(wantedoutputs));
-        error = outputs.map(function(out, i) { return (Math.pow(wantedoutputs[i] - out, 2) - 0.5) * 2 }).reduce(function(a, b) { return (a + b) / 2 }, 1);
+        error = outputs.map(function (out, i) { return (Math.pow(wantedoutputs[i] - out, 2) - 0.5) * 2 }).reduce(function (a, b) { return (a + b) / 2 }, 1);
         //console.log(error)
 
         if (this.errors.i > 500)
@@ -168,7 +168,7 @@ NeuralNetwork=function(sizes)
 
 
 
-        this.layers[this.layers.length - 1].neurons.forEach(function(neuron, j)
+        this.layers[this.layers.length - 1].neurons.forEach(function (neuron, j)
         {
             neuron.J = this.sigmoid_derivative(neuron.V) * (wantedoutputs[j] - neuron.value);
         });
@@ -177,10 +177,10 @@ NeuralNetwork=function(sizes)
         {
             var layer = this.layers[i];
 
-            layer.neurons.forEach(function(neuron, j) 
+            layer.neurons.forEach(function (neuron, j) 
             {
                 var avg_wj = 0;
-                layer.getNextLayer().neurons.forEach(function(neuron2, j2)
+                layer.getNextLayer().neurons.forEach(function (neuron2, j2)
                 {
                     neuron.addWeights[j2] = neuron.value * neuron2.J * this.learningrate;
                     avg_wj += neuron2.J * neuron.weights[j2];
@@ -194,45 +194,45 @@ NeuralNetwork=function(sizes)
 
         }
 
-        this.layers.forEach(function(layer, i)
+        this.layers.forEach(function (layer, i)
         {
-            layer.neurons.forEach(function(neuron, j)
+            layer.neurons.forEach(function (neuron, j)
             {
                 neuron.applyWeightChanges();
             });
         });
 
-        return this.layers[0].neurons.map(function(x) { return x.J })
+        return this.layers[0].neurons.map(function (x) { return x.J })
 
         //   console.log(JSON.stringify(this.errors))
     }
     // resetAll()
-    this.sigmoid=function(x)
+    this.sigmoid = function (x)
     {
         return 1 / (1 + Math.pow(Math.E, -x));
     }
 
-    this.sigmoid_derivative=function(x)
+    this.sigmoid_derivative = function (x)
     {
         return this.sigmoid(x) * (1 - this.sigmoid(x));
     }
 
 
 
-    this.sigmoid_inverse=function(x)
+    this.sigmoid_inverse = function (x)
     {
         return Math.log(1 / x - 1);
     }
 
 
-    this.getAsList=function()
+    this.getAsList = function ()
     {
-        return this.layers.map(function(x){ return x.neurons.map(function(y){ return { value: y.value, weights: y.weights } }) });
+        return this.layers.map(function (x) { return x.neurons.map(function (y) { return { value: y.value, weights: y.weights } }) });
     }
-    this.textNetwork=function()
+    this.textNetwork = function ()
     {
         var network = this.getAsList();
-        var maxlen = network.map(function(x) { return x.length }).reduce(function(a, b) { return Math.max(a, b) }, 1);
+        var maxlen = network.map(function (x) { return x.length }).reduce(function (a, b) { return Math.max(a, b) }, 1);
         var totstr = "";
         for (var i = 0; i < maxlen; i++)
         {
@@ -262,34 +262,34 @@ function Layer(size, index, parent)
         this.neurons.push(new Neuron(i, this));
     }
 
-    this.getNextLayer=function()
+    this.getNextLayer = function ()
     {
         return this.parent.layers[this.index + 1];
     }
-    this.getPrevLayer=function()
+    this.getPrevLayer = function ()
     {
         return this.parent.layers[this.index - 1];
     }
 }
 function Neuron(index, parent)
 {
-        this.weights = [];
-        this.addWeights = [];
-        for (var i = 0; i < parent.parent.sizes[parent.index + 1]; i++)
-        {
-            this.weights[i] = Math.random() * 2 - 1;
-            this.addWeights[i] = 0;
-        }
-        this.index = index;
-        this.parent = parent;
-        this.value = 0;
-        this.groupAnimationValue = 0;
-        this.groupValue = 0;
-        this.V = 0;
-        this.K = 0
-    
+    this.weights = [];
+    this.addWeights = [];
+    for (var i = 0; i < parent.parent.sizes[parent.index + 1]; i++)
+    {
+        this.weights[i] = Math.random() * 2 - 1;
+        this.addWeights[i] = 0;
+    }
+    this.index = index;
+    this.parent = parent;
+    this.value = 0;
+    this.groupAnimationValue = 0;
+    this.groupValue = 0;
+    this.V = 0;
+    this.K = 0
 
-    this.applyWeightChanges=function()
+
+    this.applyWeightChanges = function ()
     {
         for (var i = 0; i < this.addWeights.length; i++)
         {
@@ -299,37 +299,37 @@ function Neuron(index, parent)
     }
 
 
-    this.getNextLayer=function()
+    this.getNextLayer = function ()
     {
         return this.parent.getNextLayer();
     }
-    this.getPrevLayer=function()
+    this.getPrevLayer = function ()
     {
         return this.parent.getPrevLayer();
     }
 
-    this.getNextNeuron=function(j)
+    this.getNextNeuron = function (j)
     {
         return this.parent.getNextLayer()[j];
     }
 
-    this.getPrevNeuron=function(j)
+    this.getPrevNeuron = function (j)
     {
         return this.parent.getPrevLayer()[j];
     }
 
 
-    this.getNextWeight=function(j)
+    this.getNextWeight = function (j)
     {
         return this.weights[j];
     }
 
-    this.getPrevWeight=function(j, val)
+    this.getPrevWeight = function (j, val)
     {
         this.weights[j] = val;
     }
 
-    this.getLayer=function()
+    this.getLayer = function ()
     {
         return this.parent;
     }
@@ -675,7 +675,4 @@ class Neuron
         return this.parent;
     }
 }
-<<<<<<< HEAD
 */
-=======
->>>>>>> de92a2fd9ad65aa0ed16d03acc1cb3242ea04718

@@ -6,8 +6,5 @@ Training process have been done using C++ for faster learning and [http://farsio
 
 Online demo is available for testing trained neural network recognition interactively at URL:
 
-<<<<<<< HEAD
+
 [https://cdn.rawgit.com/manzik/Persian-Handwritten-Digit-Recognizer/06a003b4/JS%20Interactive/index.html](https://cdn.rawgit.com/manzik/Persian-Handwritten-Digit-Recognizer/06a003b4/JS%20Interactive/index.html)
-=======
-[https://cdn.rawgit.com/manzik/Persian-Handwritten-Digit-Recognizer/cc9b2374/JS%20Interactive/index.html](https://cdn.rawgit.com/manzik/Persian-Handwritten-Digit-Recognizer/cc9b2374/JS%20Interactive/index.html)
->>>>>>> de92a2fd9ad65aa0ed16d03acc1cb3242ea04718

@@ -76,10 +76,10 @@ void Teach(double *data, int datacount, int answer)
 	double err = 0;
 	for (int i = 0; i < 10; i++)
 	{
-		
-		err += abs((i==answer?1:0)-mynet.GetNeuronValue(mynet.NeuronsSize - 10 + i));
+
+		err += abs((i == answer ? 1 : 0) - mynet.GetNeuronValue(mynet.NeuronsSize - 10 + i));
 	}
-	predc += err/10;
+	predc += err / 10;
 	if (counterd % 100 == 0)
 	{
 		for (int i = 0; i < 10; i++)
@@ -120,7 +120,7 @@ void Teach(double *data, int datacount, int answer)
 		outfile.open("netdata.txt", std::ios_base::trunc);
 		outfile << netdata;
 
-		cout << "Error: "<<(predc / 1000) * 100 << "%\nSamples Seen: " << counterd << "\n";
+		cout << "Error: " << (predc / 1000) * 100 << "%\nSamples Seen: " << counterd << "\n";
 		//cin >> mynet.LearningRate;
 		predc = 0;
 	}
