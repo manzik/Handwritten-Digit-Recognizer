@@ -7,4 +7,4 @@ Training process have been done using C++ for faster learning and [Hoda](http://
  __Online demo__ is available for testing trained neural network recognition interactively at URL:
 
 
-[http://github.mohsenyousefian.com/Persian-Handwritten-Digit-Recognizer/JS%20Interactive/](http://github.mohsenyousefian.com/Persian-Handwritten-Digit-Recognizer/JS%20Interactive/)
+[http://github.manzik.com/Persian-Handwritten-Digit-Recognizer/JS%20Interactive/](http://github.manzik.com/Persian-Handwritten-Digit-Recognizer/JS%20Interactive/)
