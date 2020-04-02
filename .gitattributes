@@ -1,1 +1,1 @@
-*.json linguist-detectable=false
+ *.* linguist-language=C++
