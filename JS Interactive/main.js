@@ -136,9 +136,15 @@ window.addEventListener("resize", function ()
 {
     setsizes();
 });
-
+let netdata;
 window.addEventListener("load", function ()
 {
+	fetch("netdata.json")
+	.then(response => response.json())
+	.then(jsonData => 
+	{
+		netdata = jsonData;
+	});
     var t = setInterval(function () { if (runifloaded()) { clearInterval(t) } }, 250);
 });
 function runifloaded()
