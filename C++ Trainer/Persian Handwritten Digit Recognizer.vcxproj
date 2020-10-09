@@ -19,11 +19,18 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.default.props" />
   <PropertyGroup>
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MLP.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\mnist\mnist_reader.hpp" />
+    <ClInclude Include="include\mnist\mnist_reader_common.hpp" />
+    <ClInclude Include="include\mnist\mnist_reader_less.hpp" />
+    <ClInclude Include="include\mnist\mnist_utils.hpp" />
   </ItemGroup>
   <!--
   <ItemGroup>  

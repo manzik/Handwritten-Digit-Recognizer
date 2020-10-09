@@ -11,18 +11,29 @@
 #include <fstream>
 #include <string>
 #include <math.h>
+
 #include "MLP.cpp"
+#include "include/mnist/mnist_reader.hpp"
+#include "include/mnist/mnist_reader_less.hpp"
 
 using namespace std;
+
+// Could be "english" "persian"
+// Set to train for digits in the desired language
+#define TRAIN_LANG "persian"
 
 double GenerateRandNumber()
 {
 	return 10 * (((double)rand() / (RAND_MAX)) * 2 - 1);
 }
-//double M_PII = ;
-double GetRandomValueForNeuron(int size)
+
+// Random weight generation function: Uses He Normal initialization (He et al.).
+// Could possibly be replaced with Xavier weight Initialization.
+double GetRandomConnectionWeight(int size)
 {
+	// RandomNormal not used for now. Could possibly be used for Xavier weight initialization.
 	double RandomNormal = cos((double)2 * 3.1415926*((double)rand() / (RAND_MAX)))*sqrt((double)-2 * log(((double)rand() / (RAND_MAX))));
+
 	return (double)(((double)rand() / (RAND_MAX)) * 2 - 1)*((double)sqrt((double)1 / (double)size));
 }
 
@@ -44,7 +55,7 @@ int idx = 0;
 //CImage img;
 
 unsigned long CurAddr = 0;
-void ReadData(string FileName);
+void readAndTrainPersian(string FileName);
 void ReadRamFile(void* Buffer, int ByteCount);
 enum ImageType { itBinary = 0, itGray = 1 };
 void ReadRamFile(void* Buffer, int ByteCount)
@@ -52,9 +63,14 @@ void ReadRamFile(void* Buffer, int ByteCount)
 	CopyMemory(Buffer, (void*)CurAddr, ByteCount);
 	CurAddr += ByteCount;
 };
-int counterd = 0;
+
+int seenSamples = 0;
+int iterationSamples = 0;
+double cumulativeMSE = 0;
+int correctCount = 0;
 void Teach(double *data, int datacount, int answer)
 {
+	// Uncomment for decaying learning rate. Said to improve the network.
 	//mynet.LearningRate *= 0.99995;
 	int inputlen = datacount;
 
@@ -64,48 +80,56 @@ void Teach(double *data, int datacount, int answer)
 		mynet.SetNeuronValue(i, data[i]);
 	}
 
-
 	mynet.ComputeOutput();
-	/*
-	double TotalSum=0;
-	for (int i = 0; i < 10; i++)
-			{
-				TotalSum+=exp(mynet.GetNeuronValue(mynet.NeuronsSize - 10 + i));
-			}
-	*/
-	double err = 0;
+	double currentMSE = 0;
 	for (int i = 0; i < 10; i++)
 	{
 
-		err += abs((i == answer ? 1 : 0) - mynet.GetNeuronValue(mynet.NeuronsSize - 10 + i));
+		currentMSE += pow((i == answer ? 1 : 0) - mynet.GetNeuronValue(mynet.NeuronsSize - 10 + i), 2) / 10;
 	}
-	predc += err / 10;
-	if (counterd % 100 == 0)
+	cumulativeMSE += currentMSE;
+
+	// Uncomment to see all output neuron values predictions.
+	/*
+	if (seenSamples % 100 == 0)
 	{
 		for (int i = 0; i < 10; i++)
 		{
 			cout << mynet.GetNeuronValue(mynet.NeuronsSize - 10 + i) << " ";
-
-			//cout << ((maxind == answer) ? "True" : "False") << " " << counterd << "\n";
 		}
 		cout << answer << "\n";
 	}
+	*/
+	
+	bool correctClassPrediction = false;
+	double maxNeuronVal = -1;
+	int indOfMaxNeuronVal = 0;
+	for (int i = 0; i < 10; i++)
+	{
+		double neuronValue = mynet.GetNeuronValue(mynet.NeuronsSize - 10 + i);
+		if (neuronValue > maxNeuronVal)
+		{
+			maxNeuronVal = neuronValue;
+			indOfMaxNeuronVal = i;
+		}
+	}
+	bool correctPrediction = indOfMaxNeuronVal == answer;
+	if (correctPrediction)
+		correctCount++;
 
 
 	int dosslen = 10;
 
-	DesiredOutput **dos = new DesiredOutput*[dosslen];
+	DesiredOutput **desiredOutputs = new DesiredOutput*[dosslen];
 
 	for (int i = 0; i < dosslen; i++)
 	{
-		dos[i] = new DesiredOutput(mynet.NeuronsSize - 10 + i, ((i == answer) ? 1 : 0));
+		desiredOutputs[i] = new DesiredOutput(mynet.NeuronsSize - 10 + i, ((i == answer) ? 1 : 0));
 	}
 
-	mynet.BackPropagate(dos, dosslen, false);
+	mynet.BackPropagate(desiredOutputs, dosslen, false);
 
-	//mynet.LearningRate *= 0.99993;
-
-	if (counterd % 1000 == 0)
+	if (seenSamples % 1000 == 0 && seenSamples != 0)
 	{
 		string netdata = "[";
 		for (int i = 0; i < mynet.ConnectionsSize; i++)
@@ -120,18 +144,30 @@ void Teach(double *data, int datacount, int answer)
 		outfile.open("netdata.txt", std::ios_base::trunc);
 		outfile << netdata;
 
-		cout << "Error: " << (predc / 1000) * 100 << "%\nSamples Seen: " << counterd << "\n";
+		outfile.close();
+
+		int wrongCount = iterationSamples - correctCount;
+		cout << "Seen " << iterationSamples << " samples. Saved weights." << "\n";
+		cout << "Mean Squared Error: " << (cumulativeMSE / iterationSamples) * 100 << "\n"
+			 << "Accuracy: " << (double)correctCount / iterationSamples * 100 << "%\n"
+			 << "Samples Seen: " << seenSamples << "\n";
 		//cin >> mynet.LearningRate;
-		predc = 0;
+		cumulativeMSE = 0;
+		correctCount = 0;
+		iterationSamples = 0;
 	}
-	counterd++;
+	seenSamples++;
+	iterationSamples++;
+
+	for (int i = 0; i < dosslen; i++)
+		delete desiredOutputs[i];
+	delete[] desiredOutputs;
 }
 
 
 // Function from samples of http://farsiocr.ir/%D9%85%D8%AC%D9%85%D9%88%D8%B9%D9%87-%D8%AF%D8%A7%D8%AF%D9%87/%D9%85%D8%AC%D9%85%D9%88%D8%B9%D9%87-%D8%A7%D8%B1%D9%82%D8%A7%D9%85-%D8%AF%D8%B3%D8%AA%D9%86%D9%88%DB%8C%D8%B3-%D9%87%D8%AF%DB%8C/
-void ReadData(string FileName)
+void readAndTrainPersian(string FileName)
 {
-	counterd = 0;
 	HANDLE hFile, hMap;
 	void* pBase;
 	BYTE d, m, W, H, x, y, StartByte, counter, WBcount;
@@ -148,7 +184,6 @@ void ReadData(string FileName)
 	{
 		hFile = 0;
 		MessageBox(HWND(NULL), (LPCSTR)"File Can not be loaded", (LPCSTR)"error", MB_ICONERROR);
-		cout << "AAAAAAAA";
 		return;
 	};
 
@@ -242,9 +277,10 @@ void ReadData(string FileName)
 			}
 		}
 		int num = Sample.lable;
-		//cout << Sample.lable << " ";
-		Teach(TData, 28 * 28, num);
+		//cout << Sample.lable << " "; 
+		Teach(TData, 28 * 28, num);	
 
+		delete[] TData;
 
 
 	};//i
@@ -258,16 +294,70 @@ void ReadData(string FileName)
 
 
 
+typedef unsigned char uchar;
+// https://stackoverflow.com/a/33384846
+int* read_mnist_labels(string full_path, int& number_of_labels) {
+	auto reverseInt = [](int i) {
+		unsigned char c1, c2, c3, c4;
+		c1 = i & 255, c2 = (i >> 8) & 255, c3 = (i >> 16) & 255, c4 = (i >> 24) & 255;
+		return ((int)c1 << 24) + ((int)c2 << 16) + ((int)c3 << 8) + c4;
+	};
+
+	ifstream file(full_path, ios::binary);
+
+	if (file.is_open()) {
+		int magic_number = 0;
+		file.read((char*)&magic_number, sizeof(magic_number));
+		magic_number = reverseInt(magic_number);
+
+		if (magic_number != 2049) throw runtime_error("Invalid MNIST label file!");
+
+		file.read((char*)&number_of_labels, sizeof(number_of_labels)), number_of_labels = reverseInt(number_of_labels);
+
+		uchar* _char_dataset = new uchar[number_of_labels];
+		for (int i = 0; i < number_of_labels; i++) {
+			file.read((char*)&_char_dataset[i], 1);
+		}
+
+		int* _dataset = new int[number_of_labels];
+		for (int i = 0; i < number_of_labels; i++) {
+			_dataset[i] = _char_dataset[i];
+		}
+		return _dataset;
+	}
+	else {
+		throw runtime_error("Unable to open file `" + full_path + "`!");
+	}
+}
+
+void readAndTrainEnglish()
+{
+	int dataCount = -1, imageSize = 28;
+	string labels_path = "train-labels-idx1-ubyte";
+
+	int* labels = read_mnist_labels(labels_path, dataCount);
+	cout << dataCount;
+	mnist::MNIST_dataset<std::vector, std::vector<uint8_t>, uint8_t> images =
+	mnist::read_dataset<std::vector, std::vector, uint8_t, uint8_t>(".");
+
+	vector<vector<uchar>> training_images = images.training_images;
+
+	std::cout << "Nbr of training images = " << training_images.size() << std::endl;
+	_getch();
+}
+
 
 int main()
 {
+	string langMode = TRAIN_LANG;
+
 	cout << "Initializing" << "\n";
 
 	srand(time(NULL));
 
 	mynet = MultilayerPerceptron();
 	int NeuronLayersCount = 4;
-	int NeuronLayers[4] = { 28 * 28,512,512,10 };
+	int NeuronLayers[4] = { 28 * 28, 400, 400, 10 };
 	int sum = 0;
 	for (int i = 0; i < NeuronLayersCount; i++)
 	{
@@ -286,7 +376,8 @@ int main()
 		{
 			for (int k = index + NeuronLayers[i - 1]; k < index + NeuronLayers[i - 1] + NeuronLayers[i]; k++)
 			{
-				double inp = (double)GetRandomValueForNeuron(10);
+				double inp = (double)GetRandomConnectionWeight(10);
+				/*
 				if (k == index + NeuronLayers[i - 1])
 				{
 					cout << i;
@@ -297,7 +388,8 @@ int main()
 					cout << "\n";
 					cout << inp << "\n";
 				}
-				//cout << GetRandomValueForNeuron(NeuronLayers[i]) << "\n\n";
+				*/
+				//cout << GetRandomConnectionWeight(NeuronLayers[i]) << "\n\n";
 				//
 
 
@@ -309,12 +401,17 @@ int main()
 	}
 
 	cout << "Initialized" << "\n";
-	ReadData("Train 60000.cdb");
-	ReadData("Train 60000.cdb");
-	ReadData("Train 60000.cdb");
-	ReadData("Train 60000.cdb");
-	ReadData("Train 60000.cdb");
-	ReadData("Train 60000.cdb");
+
+	int trainEpochsPersian = 10, trainEpochsEnglish = 10;
+	int trainEpochs = TRAIN_LANG == "english" ? trainEpochsEnglish : trainEpochsPersian;
+	
+	if (langMode == "persian")
+		for (int i = 0; i < trainEpochsPersian; i++)
+			readAndTrainPersian("Train 60000.cdb");
+	else if (langMode == "english")
+		for (int i = 0; i < trainEpochsPersian; i++)
+			readAndTrainEnglish();
+	else throw new std::exception("Type of language not defined");
 
 
 
