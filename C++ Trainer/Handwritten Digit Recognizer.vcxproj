@@ -1,0 +1,44 @@
+﻿<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{546E43B9-A868-4092-B552-BE703F9E5A4E}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.default.props" />
+  <PropertyGroup>
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ItemGroup>
+    <ClCompile Include="english_dataset_reader.cpp" />
+    <ClCompile Include="farsi_dataset_reader.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="MLP.cpp" />
+    <ClCompile Include="utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="config.h" />
+    <ClInclude Include="english_dataset_reader.h" />
+    <ClInclude Include="farsi_dataset_reader.h" />
+    <ClInclude Include="utils.h" />
+  </ItemGroup>
+  <!--
+  <ItemGroup>  
+    <ClInclude Include="main.h" />  
+  </ItemGroup>  
+-->
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Targets" />
+</Project>

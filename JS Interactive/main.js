@@ -10,25 +10,17 @@ function langclick()
     onlangchange();
 }
 
-function onlangchange()
+function onlangchange(newLang)
 {
-    if (lang == "fa")
+    if(lang != newLang)
     {
-        var toolbuttons = document.getElementsByClassName("tool");
-        toolbuttons[0].innerHTML = "پاک کن";
-        toolbuttons[1].innerHTML = "مداد";
-        toolbuttons[2].innerHTML = "خالی کن";
-        toolbuttons[3].innerHTML = "فارسی";
-        document.getElementById("info").innerHTML = "این پروژه شبکه نورونی عمیق آموزش داده شده برای تشخیص اعداد فارسی دست نویس را به نمایش میگذارد<br/><br /> منبع این پروژه از این آدرس قابل درسترسی است:<br/><a style=\"color:rgb(154, 169, 239);font-size:15px;\" target=\"_blank\" href=\"https://github.com/manzik/Persian-Handwritten-Digit-Recognizer\">https://github.com/manzik/Persian-Handwritten-Digit-Recognizer</a>";
-    }
-    else
-    {
-        var toolbuttons = document.getElementsByClassName("tool");
-        toolbuttons[0].innerHTML = "Eraser";
-        toolbuttons[1].innerHTML = "Pen";
-        toolbuttons[2].innerHTML = "Clear";
-        toolbuttons[3].innerHTML = "English";
-        document.getElementById("info").innerHTML = "This project demonstrates a deep neural network trained to detect persian numbers that have been trained using C++ for faster learning.<br/><br />Source code for this project is available at:<br/><a style=\"color:rgb(154, 169, 239);font-size:15px;\" target=\"_blank\" href=\"https://github.com/manzik/Persian-Handwritten-Digit-Recognizer\">https://github.com/manzik/Persian-Handwritten-Digit-Recognizer</a>";
+        fetch(lang == "fa" ? "netdata-farsi.json" : "netdata-english.json")
+        .then(response => response.json())
+        .then(jsonData => 
+        {
+            netdata = jsonData;
+            mynet.loadNet(netdata);
+        });
     }
 }
 
@@ -174,9 +166,7 @@ function runifloaded()
 
     mynet = new NeuralNetwork([28 * 28, 512, 512, numberscount]);
 
-    mynet.loadNet(
-        netdata
-    );
+    mynet.loadNet(netdata);
 
     setsizes();
     render();
@@ -392,7 +382,7 @@ function mousemove(newx, newy)
         {
             ictx.globalCompositeOperation = "destination-out";
         }
-        ictx.filter = "blur(1px)";
+        ictx.filter = "blur(3px)";
         ictx.lineWidth = 30;
         ictx.strokeStyle = "rgb(9,146,198)";
         ictx.lineJoin = "round";
