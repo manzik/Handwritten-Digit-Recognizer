@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Everything in the debug folder except the exe file
+Debug/*
+!Debug/Handwritten Digit Recognizer.exe
+
 # User-specific files
 *.rsuser
 *.suo
