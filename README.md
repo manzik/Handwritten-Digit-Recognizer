@@ -25,7 +25,7 @@ We then split the data into 90% for the train and 10% for test data.
     - Now we can make predictions using the pretrained parameters based on user's handwritten images drawn in a canvas inside their browser.
 
 # Results
-We achieve __~95%__ and __~90%__ accuracy on test data for English and Persian handwritten digit detection respectively.
+We achieve __~95%__ and __~92%__ accuracy on test data for English and Persian handwritten digit detection respectively.
 ```bash
 Initializing
 Making a neural network with 1818 connections
