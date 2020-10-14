@@ -1,6 +1,6 @@
 # Handwritten Digit Recognizer
 
-A neural network (multilayer perceptron) project and library written from scratch and without using any 3rd party libraries for detecting English and Persian handwritten digits from an image. 
+A Deep Neural Network project coded from scratch trained to classify English and Persian handwritten digits from image without use of any third-party libraries using C++ and Javascript.
 
  __Online demo for the neural network's demonstration:__
 
