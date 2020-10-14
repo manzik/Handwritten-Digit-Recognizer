@@ -145,4 +145,4 @@ Enter a character to exit.
 
 ```
 # Notes
-This project was originally developed in January 2018 for Persian digits and English digits was added later on in October 2020.
+This project was originally developed in January 2018 for Persian digits and English digits was added later on in October 2020 along with lzstring compression of the pretrained paramters, significant code structure and naming improvements and more comments.
