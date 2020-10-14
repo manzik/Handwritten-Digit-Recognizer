@@ -11,7 +11,7 @@ __C++ source code for training the neural network__
 [http://github.manzik.com/Handwritten-Digit-Recognizer/js-interactive/](http://github.manzik.com/Handwritten-Digit-Recognizer/cpp-training/)
 
 # Methods
-This repository contains code for computing and optimizing a neural network's output for digits using backpropagation in both C++ and Javascript.   
+This repository contains the code for computing and then optimizing a neural network's output for digits using backpropagation in both C++ and Javascript.   
 
 - Datasets used:
   - [MNIST](http://yann.lecun.com/exdb/mnist/) (English): Training and testing data provided are mixed. The digits are also scaled and moved randomly as MNIST normalizes and centers all of the images.
