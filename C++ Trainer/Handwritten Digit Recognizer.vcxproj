@@ -24,7 +24,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>
     <ClCompile Include="english_dataset_reader.cpp" />
-    <ClCompile Include="farsi_dataset_reader.cpp" />
+    <ClCompile Include="persian_dataset_reader.cpp" />
+    <ClCompile Include="lib\lzstring\LZString.cpp" />
+    <ClCompile Include="lib\lzstring\URLEncode.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MLP.cpp" />
     <ClCompile Include="utils.cpp" />
@@ -32,7 +34,9 @@
   <ItemGroup>
     <ClInclude Include="config.h" />
     <ClInclude Include="english_dataset_reader.h" />
-    <ClInclude Include="farsi_dataset_reader.h" />
+    <ClInclude Include="persian_dataset_reader.h" />
+    <ClInclude Include="lib\lzstring\LZString.h" />
+    <ClInclude Include="lib\lzstring\URLEncode.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <!--

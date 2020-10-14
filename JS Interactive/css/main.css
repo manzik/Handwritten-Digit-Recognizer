@@ -1,0 +1,193 @@
+::-webkit-scrollbar {
+    width: 11px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgba(1, 19, 27);
+    /*-webkit-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1);*/
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(9, 146, 198);
+    /*-webkit-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.4);*/
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background:  rgba(6, 126, 171);
+  }
+  
+  ::-webkit-scrollbar-thumb:active {
+    background: rgba(6, 112, 151);
+    /*-webkit-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5);*/
+  }
+
+  body {
+    overflow: hidden;
+    background-color: rgb(1,19,27);
+    top: 0;
+    left: 0;
+    margin: 0px;
+}
+
+table, th, tr {
+    border: solid 1px rgb(86, 209, 255);
+    padding: 5px;
+}
+
+td > img {
+    height: 20px;
+    width: 20px;
+}
+
+canvas {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+span
+{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 0px;
+    position: relative;
+    color: rgb(86, 209, 255);
+    top: 280px;
+    left: 2px;
+    width: 240px;
+    margin-left: 5px;
+    word-break: break-word;
+    word-wrap: break-word;
+    display: block;
+}
+
+a
+{
+    color:rgb(154, 169, 239);font-size:15px;
+}
+
+button.tool {
+    margin-top: 15px !important;
+    margin-bottom: 5px !important;
+    padding: 10px;
+    background-color: rgba(0,94,130,0.4);
+    border: rgba(9,146,198,1) 2px solid;
+    color: rgb(108, 204, 241);
+    outline: none;
+}
+
+    button.tool:hover {
+        transition: 0.2s;
+        padding: 10px;
+        background-color: rgba(8, 105, 142, 0.66);
+        border: rgba(9,146,198,1) 2px solid;
+        color: rgb(108, 204, 241);
+        outline: none;
+    }
+
+    button.tool:active {
+        transition: 0.2s;
+        padding: 10px;
+        background-color: rgba(10, 147, 199, 0.63);
+        border: rgba(9,146,198,1) 2px solid;
+        color: rgb(108, 204, 241);
+        outline: none;
+    }
+
+    button.tool.selected {
+        background-color: rgba(0, 153, 212, 0.58);
+        border: rgba(9,146,198,1) 2px solid;
+        color: rgb(108, 204, 241);
+        outline: none;
+    }
+
+.main-canvas-container
+{
+    left: 250px;
+    position: fixed;
+    width: calc(100%-250px);
+    top: 0;
+}
+
+.left-panel-container
+{          
+    width: 250px;
+    height: 100%;
+    overflow: visible;
+    position: fixed;
+    margin: 0px;
+    padding: 0px;
+}
+
+.left-panel
+{
+    left: 0;
+    top: 0;
+    margin: 0;
+    background-color: rgba(4,77,105,0.5);
+    box-shadow: rgba(0,0,0,1)  2px 0px 10px;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-left: 0px;
+    padding-right: 0px;
+    float: left;
+    position: relative;
+}
+
+#hidden-draw-canvas
+{
+    position: absolute;
+    left: -3px;
+    top: 0;
+}
+
+#visible-draw-canvas
+{
+    position: absolute;
+    border: ridge rgb(9,146,198) 1px;
+    left: -2px;
+    top: 0;
+}
+
+.canvas-toolbar
+{
+    position: relative;
+    display: flex;
+    justify-content: space-evenly;
+    left: 0;
+    top: 250px;
+    width: 100%;
+}
+
+#langs-toolbar
+{
+    justify-content: center;
+}
+
+.canvas-toolbar button img
+{
+    width: 15px;
+    height: 15px;
+    transform: translateX(-2px) translateY(2px);
+    margin-right: 2px;
+    /* https://codepen.io/sosuke/pen/Pjoqqp */
+    filter: invert(76%) sepia(69%) saturate(1998%) hue-rotate(167deg) brightness(101%) contrast(101%);
+}
+
+.sample-digits-table
+{
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    font-size: 20px;
+    text-align: center;
+    top: 300px;
+    left: 0px;
+    position: relative;
+    margin: 10px;
+    color: rgb(86, 209, 255);
+    border-collapse: collapse;
+}

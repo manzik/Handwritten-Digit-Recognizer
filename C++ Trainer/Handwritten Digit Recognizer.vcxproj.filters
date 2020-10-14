@@ -3,5 +3,18 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MLP.cpp" />
+    <ClCompile Include="english_dataset_reader.cpp" />
+    <ClCompile Include="persian_dataset_reader.cpp" />
+    <ClCompile Include="utils.cpp" />
+    <ClCompile Include="lib\lzstring\LZString.cpp" />
+    <ClCompile Include="lib\lzstring\URLEncode.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="config.h" />
+    <ClInclude Include="english_dataset_reader.h" />
+    <ClInclude Include="persian_dataset_reader.h" />
+    <ClInclude Include="utils.h" />
+    <ClInclude Include="lib\lzstring\LZString.h" />
+    <ClInclude Include="lib\lzstring\URLEncode.h" />
   </ItemGroup>
 </Project>

@@ -1,130 +1,102 @@
 <!DOCYPE html>
 <html>
 <head>
-    <style>
-        body {
-            overflow: hidden;
-        }
-
-        table, th, tr {
-            border: solid 1px rgb(86, 209, 255);
-            padding: 5px;
-        }
-
-        button.tool {
-            margin-top: 15px !important;
-            margin-bottom: 5px !important;
-            padding: 10px;
-            background-color: rgba(0,94,130,0.4);
-            border: rgba(9,146,198,1) 2px solid;
-            color: rgb(108, 204, 241);
-            outline: none;
-        }
-
-            button.tool:hover {
-                transition: 0.2s;
-                padding: 10px;
-                background-color: rgba(8, 105, 142, 0.66);
-                border: rgba(9,146,198,1) 2px solid;
-                color: rgb(108, 204, 241);
-                outline: none;
-            }
-
-            button.tool:active {
-                transition: 0.2s;
-                padding: 10px;
-                background-color: rgba(10, 147, 199, 0.63);
-                border: rgba(9,146,198,1) 2px solid;
-                color: rgb(108, 204, 241);
-                outline: none;
-            }
-
-            button.tool.selected {
-                background-color: rgba(0, 153, 212, 0.58);
-                border: rgba(9,146,198,1) 2px solid;
-                color: rgb(108, 204, 241);
-                outline: none;
-            }
-
-        td > img {
-            height: 20px;
-            width: 20px;
-        }
-
-        canvas {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-    </style>
-
+    <link rel="stylesheet" href="css/main.css" />
     <script src="MLP.js" defer="defer"></script>
-    <script src="main.js" defer="defer">
+    <script src="main.js" defer="defer"></script>
 
-    </script>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="lib/lz-string.min.js"></script>
 </head>
-<body style="background-color:rgb(1,19,27)">
+<body>
 
-    <div style="left:250px;position:fixed;width:calc(100%-250px);top:0;">
-        <canvas id="c"></canvas>
-
+    <div class="main-canvas-container">
+        <canvas id="network-canvas"></canvas>
     </div>
-    <div style="left:0;top:0;height:100%;width:250px;margin:0;position:fixed;background-color:rgba(4,77,105,0.5);box-shadow:rgba(0,0,0,1)  2px 0px 10px;overflow-y:auto;">
-        <canvas height="250" width="250" id="inputc2" style="position:absolute;left:-3px;top:0;"></canvas>
-        <canvas height="250" width="250" id="inputc" style="border:ridge rgb(9,146,198) 1px;position:absolute;left:-2px;top:0;"></canvas>
-        <button style="top:250px;position:relative;margin:25px;" class="tool" onclick="ebuttonclick();">Eraser</button>
-        <button style="top:250px;position:relative;margin:25px;width:60px" class="tool selected" onclick="pbuttonclick();">Pen</button>
-        <button style="top:250px;position:relative;margin:30px;left:50px;width:75px;" class="tool" onclick="cbuttonclick();">Clear</button><br />
-        <span style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;padding:0px;position:relative;color:rgb(86, 209, 255);top:280px;left:5px;width:220px;word-break:break-word;word-wrap:break-word;" id="info">
-            This project demonstrates a deep neural network trained to detect persian numbers that have been trained using C++ for faster learning.
-            <br /><br />
-            Source code for this project is available at:
-            <br />
-            <a style="color:rgb(154, 169, 239);font-size:15px;" target="_blank" href="https://github.com/manzik/Persian-Handwritten-Digit-Recognizer">https://github.com/manzik/Persian-Handwritten-Digit-Recognizer</a>
-        </span>
-        <table style="font-size:20px;text-align:center;top:300px;left:0px;position:relative;margin:10px;color:rgb(86, 209, 255);border-collapse: collapse;" border="1">
-            <tr>
-                <td onclick="drawdemo(parseInt(this.innerHTML))">0</td>
-                <td onclick="drawdemo(parseInt(this.innerHTML))">1</td>
-                <td onclick="drawdemo(parseInt(this.innerHTML))">2</td>
-                <td onclick="drawdemo(parseInt(this.innerHTML))">3</td>
-                <td onclick="drawdemo(parseInt(this.innerHTML))">4</td>
-                <td onclick="drawdemo(parseInt(this.innerHTML))">5</td>
-                <td onclick="drawdemo(parseInt(this.innerHTML))">6</td>
-                <td onclick="drawdemo(parseInt(this.innerHTML))">7</td>
-                <td onclick="drawdemo(parseInt(this.innerHTML))">8</td>
-                <td onclick="drawdemo(parseInt(this.innerHTML))">9</td>
-            </tr>
-            <tr>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/0.png" /></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/1.png" /></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/2.png" /></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/3.png" /></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/4.png" /></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/5.png" /></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/6.png" /></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/7.png" /></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/8.png" /></td>
-                <td onclick="drawdemo(parseInt(this.innerHTML[24]))"><img src="number images/9.png" /></td>
-            </tr>
-        </table>
-        <button style="top:325px;left:50px;position:relative;margin:30px; width:75px;" class="tool" onclick="langclick()">English</button>
+    <div class="left-panel-container">
+        <div class="left-panel">
+            <canvas height="250" width="250" id="hidden-draw-canvas"></canvas>
+            <canvas height="250" width="250" id="visible-draw-canvas"></canvas>
+            <div class="canvas-toolbar">
+                <button class="tool selected" onclick="penButtonClick();"><img src="images/edit.svg" />Pen</button>
+                <button class="tool" onclick="eraseButtonClick();"><img src="images/eraser.svg" />Eraser</button>
+                <button class="tool" onclick="clearButtonClick();">Clear</button>
+            </div>
+            <span style="top: 255px; position: relative; text-align: center;">&nbsp;Pretrained Parameters Language: </span><br/>
+            <div class="canvas-toolbar" id="langs-toolbar">
+                <button class="tool selected" onclick="networkLangChange('en')">English</button>
+                <button class="tool" onclick="networkLangChange('fa')">Persian</button>
+            </div>
+            <span id="info">
+                This project demonstrates a fully-connected feedforward neural network trained to detect numbers in English and Persian. The NN is trained in C++ for faster performance. <br/>You can access the C++ source code <a target="_blank" href="https://github.com/manzik/Handwritten-Digit-Recognizer/tree/master/C%2B%2B%20Trainer">here</a>.
+                <br /><br />
+                Project's github:
+                <br />
+                <a target="_blank" href="https://github.com/manzik/Handwritten-Digit-Recognizer">https://github.com/manzik/Handwritten-Digit-Recognizer</a>
+                <br/><br/>
+                You can click on a number below to load a sample handwritten digit:
+            </span>
+
+            <table class="sample-digits-table" border="1">
+                <tr>
+                    <td onclick="drawDemo(0)"><img src="digit images/english/0.png" /></td>
+                    <td onclick="drawDemo(1)"><img src="digit images/english/1.png" /></td>
+                    <td onclick="drawDemo(2)"><img src="digit images/english/2.png" /></td>
+                    <td onclick="drawDemo(3)"><img src="digit images/english/3.png" /></td>
+                    <td onclick="drawDemo(4)"><img src="digit images/english/4.png" /></td>
+                    <td onclick="drawDemo(5)"><img src="digit images/english/5.png" /></td>
+                    <td onclick="drawDemo(6)"><img src="digit images/english/6.png" /></td>
+                    <td onclick="drawDemo(7)"><img src="digit images/english/7.png" /></td>
+                    <td onclick="drawDemo(8)"><img src="digit images/english/8.png" /></td>
+                    <td onclick="drawDemo(9)"><img src="digit images/english/9.png" /></td>
+                </tr>
+                <tr>
+                    <td onclick="drawDemo(0)"><img src="digit images/persian/0.png" /></td>
+                    <td onclick="drawDemo(1)"><img src="digit images/persian/1.png" /></td>
+                    <td onclick="drawDemo(2)"><img src="digit images/persian/2.png" /></td>
+                    <td onclick="drawDemo(3)"><img src="digit images/persian/3.png" /></td>
+                    <td onclick="drawDemo(4)"><img src="digit images/persian/4.png" /></td>
+                    <td onclick="drawDemo(5)"><img src="digit images/persian/5.png" /></td>
+                    <td onclick="drawDemo(6)"><img src="digit images/persian/6.png" /></td>
+                    <td onclick="drawDemo(7)"><img src="digit images/persian/7.png" /></td>
+                    <td onclick="drawDemo(8)"><img src="digit images/persian/8.png" /></td>
+                    <td onclick="drawDemo(9)"><img src="digit images/persian/9.png" /></td>
+                </tr>
+            </table>
+            <span id="info">
+                <br/>
+                <small>
+                Note: The number of neurons and connections in this demonstration is not representative of the actual neural network.<br/><br/> Number of neurons in each layer of the neural network: { 784, 512, 512, 10 }
+                </small>
+                <br/>
+                &nbsp;
+            </span>
+        </div>
     </div>
     <div style="display:none;">
-        <img src="number%20images/0.png" id="number0" />
-        <img src="number%20images/1.png" id="number1" />
-        <img src="number%20images/2.png" id="number2" />
-        <img src="number%20images/3.png" id="number3" />
-        <img src="number%20images/4.png" id="number4" />
-        <img src="number%20images/5.png" id="number5" />
-        <img src="number%20images/6.png" id="number6" />
-        <img src="number%20images/7.png" id="number7" />
-        <img src="number%20images/8.png" id="number8" />
-        <img src="number%20images/9.png" id="number9" />
+        <img src="number%20images/english/0.png" id="english-number-0" />
+        <img src="number%20images/english/1.png" id="english-number-1" />
+        <img src="number%20images/english/2.png" id="english-number-2" />
+        <img src="number%20images/english/3.png" id="english-number-3" />
+        <img src="number%20images/english/4.png" id="english-number-4" />
+        <img src="number%20images/english/5.png" id="english-number-5" />
+        <img src="number%20images/english/6.png" id="english-number-6" />
+        <img src="number%20images/english/7.png" id="english-number-7" />
+        <img src="number%20images/english/8.png" id="english-number-8" />
+        <img src="number%20images/english/9.png" id="english-number-9" />
+
+        <img src="number%20images/persian/0.png" id="persian-number-0" />
+        <img src="number%20images/persian/1.png" id="persian-number-1" />
+        <img src="number%20images/persian/2.png" id="persian-number-2" />
+        <img src="number%20images/persian/3.png" id="persian-number-3" />
+        <img src="number%20images/persian/4.png" id="persian-number-4" />
+        <img src="number%20images/persian/5.png" id="persian-number-5" />
+        <img src="number%20images/persian/6.png" id="persian-number-6" />
+        <img src="number%20images/persian/7.png" id="persian-number-7" />
+        <img src="number%20images/persian/8.png" id="persian-number-8" />
+        <img src="number%20images/persian/9.png" id="persian-number-9" />
     </div>
 </body>
 </html>

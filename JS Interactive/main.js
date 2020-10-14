@@ -1,420 +1,457 @@
-var lang = "en";
-var mynet;
-function langclick()
-{
-    if (lang == "en")
-        lang = "fa";
-    else
-        lang = "en";
+let networkLang = "en";
+let currentNetwork, networkWeights;
+let networkLangsData = {
+    fa: { filePath: "netdata-persian.json.lzstring", data: null },
+    en: { filePath: "netdata-english-transformed.json.lzstring", data: null }
+};
 
-    onlangchange();
-}
+let faLangNeuralNet = null, engLangNeuralNet;
 
-function onlangchange(newLang)
+function networkLangChange(newNetworkLang)
 {
-    if(lang != newLang)
+    if(networkLang != newNetworkLang)
     {
-        fetch(lang == "fa" ? "netdata-farsi.json" : "netdata-english.json")
-        .then(response => response.json())
-        .then(jsonData => 
+        if (networkLang == "en")
+            networkLang = "fa";
+        else
+            networkLang = "en";
+        
+        setCurrentNetwork(newNetworkLang, () => 
         {
-            netdata = jsonData;
-            mynet.loadNet(netdata);
+            applyNetworkLangChangeToUI(newNetworkLang)
         });
     }
 }
 
-function cbuttonclick()
+function applyNetworkLangChangeToUI(newLang)
 {
-    for (var i = 0; i < 28 * 28; i++)
+    let isNewEn = newLang == "en";
+
+    let languageElementsArr = document.querySelector("#langs-toolbar").children;
+    Array.from(languageElementsArr).forEach((languageElement, ind) => 
     {
-        griddata[i] = 0;
+        let isActivated = isNewEn ? ind == 0 : ind == 1;
+        if(isActivated)
+            languageElement.classList.add("selected");
+        else
+            languageElement.classList.remove("selected"); 
+    });
+}
+
+let neuronsInfo = { x: 0, y: 0, down: false };
+let neuronsMargin = 2;
+let neuronsRadius = 9;
+let neuronIndexes = [];
+let PI2 = Math.PI * 2;
+let persianNumbers = "۰۱۲۳۴۵۶۷۸۹";
+
+function setCurrentNetwork(newLang, cb)
+{
+    let networkLangData = networkLangsData[newLang];
+
+    let setNetworkFromWeights = () => 
+    { 
+        networkWeights = networkLangData.data;
+        if(currentNetwork)
+        {
+            currentNetwork.loadNet(networkWeights);
+            currentNetwork.predict(gridData.map(Math.round));
+        }
+
+        if(cb)
+            cb();
+    };
+
+    // Either load neural network weights to networkLangData.data and set neural network data or if it's there do it right away
+    if(!networkLangData.data)
+    {
+        toastr.info(`Downloading pretrained parameters for the ${newLang == "fa" ? "Persian" : "English"} language`, {timeOut: 5000});
+        fetch(networkLangData.filePath)
+        .then(response => response.text())
+        .then(response => 
+        {
+            let decompressedNetworkWeights = LZString.decompressFromBase64(response);
+            networkLangData.data = JSON.parse(decompressedNetworkWeights);
+            setNetworkFromWeights();
+            toastr.info(`Downloaded, decoded and set parameters for the ${newLang == "fa" ? "Persian" : "English"} language`, {timeOut: 5000});
+            decompressedNetworkWeights = null;
+            response = null;
+        })
+        .catch((e) => {
+            toastr.info(`Error occured while downloading paramters for the ${newLang == "fa" ? "Persian" : "English"} language`, {timeOut: 5000});
+        });
+    }
+    else
+        setNetworkFromWeights();
+}
+
+function clearButtonClick()
+{
+    for (let i = 0; i < 28 * 28; i++)
+    {
+        gridData[i] = 0;
     }
 
-    rendergrid();
+    renderGrid();
 
-    //var p = mynet.predict(griddata.map(Math.round));
-
-    for (var i = 0, leni = mynet.layers.length; i < leni; i++)
+    for (let i = 0, leni = currentNetwork.layers.length; i < leni; i++)
     {
-        for (var j = 0, lenj = mynet.layers[i].neurons.length; j < lenj; j++)
+        for (let j = 0, lenj = currentNetwork.layers[i].neurons.length; j < lenj; j++)
         {
-            mynet.layers[i].neurons[j].value = 0;
+            currentNetwork.layers[i].neurons[j].value = 0;
         }
     }
 }
 
-var buttonsstatepen = true;
-function pbuttonclick()
+let buttonStateIsPen = true;
+function penButtonClick()
 {
-    if (!buttonsstatepen)
+    if (!buttonStateIsPen)
     {
-        buttonsstatepen = true;
+        buttonStateIsPen = true;
 
-        checkpstate();
+        setActiveCanvasButton();
     }
 }
-function ebuttonclick()
+function eraseButtonClick()
 {
-    if (buttonsstatepen)
+    if (buttonStateIsPen)
     {
-        buttonsstatepen = false;
+        buttonStateIsPen = false;
 
-        checkpstate();
+        setActiveCanvasButton();
     }
 }
 
-function checkpstate()
+function setActiveCanvasButton()
 {
-    var bs = document.getElementsByClassName("tool");
-    if (buttonsstatepen)
-    {
-        bs[0].className = "tool";
-        bs[1].className = "tool selected";
-    }
-    else
-    {
-        bs[1].className = "tool";
-        bs[0].className = "tool selected";
-    }
+    let canvasToolButtonElementsArr = document.querySelectorAll(".canvas-toolbar > button");
+    Array.from(canvasToolButtonElementsArr).slice(0, 2).forEach(languageElement => 
+    { 
+        languageElement.classList.toggle("selected"); 
+    });
 }
-var c, cheight, cwidth;
-function setsizes()
+let networkCanvas, canvasHeight, canvasWidth;
+function setSizes()
 {
     try
     {
-        c.width = innerWidth - 225;
-        c.height = innerHeight;
+        networkCanvas.width = innerWidth - 225;
+        networkCanvas.height = innerHeight;
 
-        cheight = c.height;
-        cwidth = c.width;
+        canvasHeight = networkCanvas.height;
+        canvasWidth = networkCanvas.width;
     }
-    catch (e)
+    catch (e) { }
+
+    neuronIndexes = [];
+    let ih = (innerHeight - 100);
+    for (let i = 0; i < currentNetwork.layers.length; i++)
     {
+        let layer = currentNetwork.layers[i];
 
-    }
-
-    neuronindexes = [];
-    var ih = (innerHeight - 100);
-    for (var i = 0; i < mynet.layers.length; i++)
-    {
-        var layer = mynet.layers[i];
-
-        if (ih / (neuronsradius * 2 + neuronsmargin) < layer.neurons.length)
+        if (ih / (neuronsRadius * 2 + neuronsMargin) < layer.neurons.length)
         {
-            var newarr = [];
-            for (var j = 0, lenj = (ih / (neuronsradius * 2 + neuronsmargin)); j < lenj; j++)
+            let newarr = [];
+            for (let j = 0, lenj = (ih / (neuronsRadius * 2 + neuronsMargin)); j < lenj; j++)
             {
 
                 newarr.push(Math.round(j * (layer.neurons.length / lenj)));
             }
-            neuronindexes.push(newarr);
+            neuronIndexes.push(newarr);
         }
         else
         {
-            var newarr = [];
-            for (var j = 0, lenj = layer.neurons.length; j < lenj; j++)
+            let newarr = [];
+            for (let j = 0, lenj = layer.neurons.length; j < lenj; j++)
             {
                 newarr.push(j);
             }
-            neuronindexes.push(newarr);
+            neuronIndexes.push(newarr);
         }
-
-
-
     }
 }
 window.addEventListener("resize", function ()
 {
-    setsizes();
+    setSizes();
 });
-let netdata;
 window.addEventListener("load", function ()
 {
-	fetch("netdata.json")
-	.then(response => response.json())
-	.then(jsonData => 
-	{
-		netdata = jsonData;
-	});
-    var t = setInterval(function () { if (runifloaded()) { clearInterval(t) } }, 250);
+    setCurrentNetwork(networkLang);
+    let t = setInterval(function () { if (runRenderingLoopIfLoaded()) { clearInterval(t) } }, 250);
 });
-function runifloaded()
+function runRenderingLoopIfLoaded()
 {
-    if (!netdata || !NeuralNetwork)
+    if (!networkWeights || !NeuralNetwork)
         return false;
-    c = document.getElementById("c");
-    ctx = c.getContext("2d");
+        
+    networkCanvas = document.getElementById("network-canvas");
+    networkCtx = networkCanvas.getContext("2d");
 
-    ic = document.getElementById("inputc");
+    visibleDrawingCanvas = document.getElementById("visible-draw-canvas");
 
-    ictx = ic.getContext("2d");
+    visibleDrawingCtx = visibleDrawingCanvas.getContext("2d");
 
-    ic2 = document.getElementById("inputc2");
-    ictx2 = ic.getContext("2d");
+    hiddenDrawingCanvas = document.getElementById("hidden-draw-canvas");
+    hiddenDrawingCtx = visibleDrawingCanvas.getContext("2d");
 
-    ictx2.strokeStyle = "rgb(9,146,198)";
+    hiddenDrawingCtx.strokeStyle = "rgb(9,146,198)";
 
-    for (var i = 0; i < 28 * 28; i++)
+    for (let i = 0; i < 28 * 28; i++)
     {
-        griddata[i] = 0;
+        gridData[i] = 0;
     }
 
-    rendergrid();
+    renderGrid();
 
-    numberscount = 10;
+    let digitsCount = 10;
 
-    mynet = new NeuralNetwork([28 * 28, 512, 512, numberscount]);
+    currentNetwork = new NeuralNetwork([28 * 28, 512, 512, digitsCount]);
 
-    mynet.loadNet(netdata);
+    currentNetwork.loadNet(networkWeights);
 
-    setsizes();
+    setSizes();
     render();
 
-    drawdemo(Math.floor(Math.random() * 10));
+    drawDemo(Math.floor(Math.random() * 10));
 
-    ic.addEventListener("touchstart", function (e)
+    visibleDrawingCanvas.addEventListener("touchstart", function (e)
     {
-        var touch = e.touches[0];
-        mouseinf.x = touch.clientX;
-        mouseinf.y = touch.clientY;
-        mouseinf.down = true;
+        let touch = e.touches[0];
+        neuronsInfo.x = touch.clientX;
+        neuronsInfo.y = touch.clientY;
+        neuronsInfo.down = true;
     }, false);
     window.addEventListener("touchend", function (e)
     {
-        var touch = e.touches[0];
+        let touch = e.touches[0];
         if (touch)
         {
-            mouseinf.x = touch.clientX;
-            mouseinf.y = touch.clientY;
+            neuronsInfo.x = touch.clientX;
+            neuronsInfo.y = touch.clientY;
         }
-        mouseinf.down = false;
+        neuronsInfo.down = false;
 
     }, false);
-    ic.addEventListener("touchmove", function (e)
+    visibleDrawingCanvas.addEventListener("touchmove", function (e)
     {
-        var touch = e.touches[0];
-        mousemove(touch.clientX, touch.clientY);
+        let touch = e.touches[0];
+        mouseMove(touch.clientX, touch.clientY);
         e.preventDefault();
     }, false);
     return true;
 }
-function drawdemo(number)
+function drawDemo(number)
 {
-    cbuttonclick();
+    clearButtonClick();
 
-    ictx.drawImage(document.getElementById("number" + number), 0, 0, 250, 250);
+    hiddenDrawingCtx.drawImage(document.getElementById(`${networkLang == "en" ? "english" : "persian"}-number-${number}`), 0, 0, 250, 250);
 
-    var scale = (250 / 28);
-    for (var i = 0; i < 28 * 28; i++)
+    let scale = (250 / 28);
+    for (let i = 0; i < 28 * 28; i++)
     {
-        var x = i % 28 - 1;
-        var y = Math.floor(i / 28) - 1;
-        griddata[i] = ictx.getImageData(x * scale + 28 / 2, y * scale + 28 / 2, 1, 1).data[3] / 255;
+        let x = i % 28 - 1;
+        let y = Math.floor(i / 28) - 1;
+        gridData[i] = hiddenDrawingCtx.getImageData(x * scale + 28 / 2, y * scale + 28 / 2, 1, 1).data[3] / 255;
     }
 
-    rendergrid();
+    renderGrid();
 
-    var p = mynet.predict(griddata.map(Math.round));
+    let p = currentNetwork.predict(gridData.map(Math.round));
 }
-var griddata = [];
-function rendergrid()
+let gridData = [];
+function renderGrid()
 {
-    ictx2.lineWidth = 1;
-    ictx2.strokeStyle = "rgb(9,146,198)";
-    ictx2.clearRect(0, 0, 250, 250);
-    for (var y = 0; y < 28; y++)
+    hiddenDrawingCtx.lineWidth = 1;
+    hiddenDrawingCtx.strokeStyle = "rgb(9,146,198)";
+    hiddenDrawingCtx.clearRect(0, 0, 250, 250);
+    for (let y = 0; y < 28; y++)
     {
-        for (var x = 0; x < 28; x++)
+        for (let x = 0; x < 28; x++)
         {
-            var val = griddata[x + 28 * y];
-            //console.log(val);
-            var scale = (250 / 28);
-            ictx2.fillStyle = "rgba(0,253,253," + val + ")";
-            ictx2.beginPath();
+            let val = gridData[x + 28 * y];
+            let scale = (250 / 28);
 
-            ictx2.moveTo(x * scale, y * scale);
-            ictx2.lineTo(x * scale, (y + 1) * scale);
-            ictx2.lineTo((x + 1) * scale, (y + 1) * scale);
-            ictx2.lineTo((x + 1) * scale, y * scale);
-            ictx2.lineTo(x * scale, y * scale);
+            hiddenDrawingCtx.fillStyle = "rgba(0,253,253," + val + ")";
+            hiddenDrawingCtx.beginPath();
 
-            ictx2.fill();
+            hiddenDrawingCtx.moveTo(x * scale, y * scale);
+            hiddenDrawingCtx.lineTo(x * scale, (y + 1) * scale);
+            hiddenDrawingCtx.lineTo((x + 1) * scale, (y + 1) * scale);
+            hiddenDrawingCtx.lineTo((x + 1) * scale, y * scale);
+            hiddenDrawingCtx.lineTo(x * scale, y * scale);
+
+            hiddenDrawingCtx.fill();
         }
     }
 
-    for (var x = 0; x < 250; x += 250 / 28)
+    for (let x = 0; x < 250; x += 250 / 28)
     {
-        ictx2.beginPath();
-        ictx2.moveTo(Math.round(x) + 0.5, 0);
-        ictx2.lineTo(Math.round(x) + 0.5, 250);
-        ictx2.closePath();
-        ictx2.stroke();
+        hiddenDrawingCtx.beginPath();
+        hiddenDrawingCtx.moveTo(Math.round(x) + 0.5, 0);
+        hiddenDrawingCtx.lineTo(Math.round(x) + 0.5, 250);
+        hiddenDrawingCtx.closePath();
+        hiddenDrawingCtx.stroke();
     }
 
-    for (var y = 0; y < 250; y += 250 / 28)
+    for (let y = 0; y < 250; y += 250 / 28)
     {
-        ictx2.beginPath();
-        ictx2.moveTo(0, Math.round(y) + 0.5);
-        ictx2.lineTo(250, Math.round(y) + 0.5);
-        ictx2.closePath();
-        ictx2.stroke();
+        hiddenDrawingCtx.beginPath();
+        hiddenDrawingCtx.moveTo(0, Math.round(y) + 0.5);
+        hiddenDrawingCtx.lineTo(250, Math.round(y) + 0.5);
+        hiddenDrawingCtx.closePath();
+        hiddenDrawingCtx.stroke();
     }
 
 
 }
-var mouseinf = { x: 0, y: 0, down: false };
+
+function isEventTargetDrawingCanvas(e)
+{
+    return e.target.id == "visible-draw-canvas";
+}
 
 window.addEventListener("mousedown", function (e)
 {
-    mouseinf.x = e.offsetX;
-    mouseinf.y = e.offsetY;
-    mouseinf.down = true;
+    if(!isEventTargetDrawingCanvas(e))
+        return;
+    
+    neuronsInfo.x = e.offsetX;
+    neuronsInfo.y = e.offsetY;
+    neuronsInfo.down = true;
 });
-var mynet;
-var neuronsmargin = 2;
-var neuronsradius = 9;
-neuronindexes = [];
-var PI2 = Math.PI * 2;
-var persiannumbers = "۰۱۲۳۴۵۶۷۸۹";
-function renderneurons()
+window.addEventListener("mouseup", function (e)
 {
-    var iw = innerWidth - 250;
-    ctx.clearRect(0, 0, iw, innerHeight);
+    neuronsInfo.x = e.offsetX;
+    neuronsInfo.y = e.offsetY;
+    neuronsInfo.down = false;
+});
+window.addEventListener("mousemove", function (e)
+{
+    if(!isEventTargetDrawingCanvas(e))
+        return;
 
-    var neurontotysize = (neuronsradius * 2 + neuronsmargin);
-    ctx.strokeStyle = "rgba(9, 146, 198,0.05)";
-    var ilni = (iw / (neuronindexes.length - 0.5));
-    for (var i = 0, leni = neuronindexes.length; i < leni; i++)
+    mouseMove(e.offsetX, e.offsetY);
+});
+
+function renderNeurons()
+{
+    let iw = innerWidth - 250;
+    networkCtx.clearRect(0, 0, iw, innerHeight);
+
+    let neurontotysize = (neuronsRadius * 2 + neuronsMargin);
+    networkCtx.strokeStyle = "rgba(9, 146, 198,0.05)";
+    let renderingNeuronsLayersCount = neuronIndexes.length;
+    let ilni = (iw / (renderingNeuronsLayersCount - 0.5));
+    for (let i = 0, leni = renderingNeuronsLayersCount; i < leni; i++)
     {
-        for (var j = 0, lenj = neuronindexes[i].length; j < lenj; j++)
+        for (let j = 0, lenj = neuronIndexes[i].length; j < lenj; j++)
         {
-            if (!this.z)
-            {
-                this.z = true;
-                console.log(neuronindexes);
-            }
-            var neuronind = neuronindexes[i][j];
-            var val = mynet.layers[i].neurons[neuronind].value;
-            var ind = neuronind;
-            /*
-            for(var k=neuronind;k<((j+1<lenj)?neuronindexes[i][j+1]:neuronind+1);k++)
-            {
-                val+=mynet.layers[i].neurons[true?k:neuronind].value;
-            }
-            val/=(neuronindexes[i][j+1]-neuronind)||1;
-            */
-            var neuron = mynet.layers[i].neurons[neuronind];
+            let neuronInd = neuronIndexes[i][j];
+
+            if(currentNetwork.layers[i].neurons.length <= neuronInd)
+                continue;
+
+            let val = currentNetwork.layers[i].neurons[neuronInd].value;
+            let ind = neuronInd;
+            
+            let neuron = currentNetwork.layers[i].neurons[neuronInd];
             neuron.groupValue = val;
             neuron.groupAnimationValue -= (neuron.groupAnimationValue - neuron.groupValue) / 8;
 
-            var val = neuron.groupAnimationValue;
-            ctx.beginPath();
-            ctx.arc(50 + i * ilni, (innerHeight) / 2 + neurontotysize * (j - lenj / 2), neuronsradius, 0, PI2);
-            ctx.closePath();
-            ctx.fillStyle = "rgba(9,146,198," + (val) + ")";
-            ctx.fill();
-            ctx.stroke();
+            let neuronActivationStrength = neuron.groupAnimationValue;
+            networkCtx.beginPath();
+            networkCtx.arc(50 + i * ilni, (innerHeight) / 2 + neurontotysize * (j - lenj / 2), neuronsRadius, 0, PI2);
+            networkCtx.closePath();
+            networkCtx.fillStyle = "rgba(9,146,198," + (neuronActivationStrength) + ")";
+            networkCtx.fill();
+            networkCtx.stroke();
 
             if (i == leni - 1)
             {
-                ctx.font = ((lang == "en" ? 1 : 2) * neuronsradius * (1 + val / 2)) + "px Arial";
-                ctx.fillText(lang == "en" ? String(j) : persiannumbers[j], 50 + i * ilni + neuronsradius * 2, neuronsradius / 2 + (innerHeight) / 2 + neurontotysize * (j - lenj / 2));
+                networkCtx.font = (neuronsRadius * (1 + val / 2)) + "px Arial";
+                networkCtx.fillText(networkLang == "en" ? String(j) : `${String(j)} (${persianNumbers[j]})`, 50 + i * ilni + neuronsRadius * 2, neuronsRadius / 2 + (innerHeight) / 2 + neurontotysize * (j - lenj / 2));
             }
         }
     }
-    var ilni2 = (iw / (leni - 0.5));
-    /*
-    var neuroncountindratio=[];
-    for(var i=0;i<neuronindexes.length;i++)
+    let ilni2 = (iw / (renderingNeuronsLayersCount - 0.5));
+    
+    for (let i = 0, leni = neuronIndexes.length; i < leni - 1; i++)
     {
-        var rval=mynet.layers[i].neurons/neuronindexes[i].length;
-        neuroncountindratio.push(rval);
-    }
-    */
-    for (var i = 0, leni = neuronindexes.length; i < leni - 1; i++)
-    {
-        for (var j = 0, lenj = neuronindexes[i].length; j < lenj; j++)
+        for (let j = 0, lenj = neuronIndexes[i].length; j < lenj; j++)
         {
 
-            var neuronind = neuronindexes[i][j];
+            let neuronInd = neuronIndexes[i][j];
 
-            var val = mynet.layers[i].neurons[neuronind].groupAnimationValue;
+            let targetNeuron = currentNetwork.layers[i].neurons[neuronInd];
 
-            for (var j2 = 0, lenj2 = neuronindexes[i + 1].length; j2 < lenj2; j2++)
+            if(!targetNeuron)
+                continue;
+
+            let val = targetNeuron.groupAnimationValue;
+
+            for (let k = 0, lenj2 = neuronIndexes[i + 1].length; k < lenj2; k++)
             {
 
-                var weight = mynet.layers[i].neurons[neuronind].weights[neuronindexes[i + 1][j2]];
+                let weight = currentNetwork.layers[i].neurons[neuronInd].weights[neuronIndexes[i + 1][k]];
 
+                if(!weight)
+                    continue;
 
-                ctx.beginPath();
-                ctx.moveTo(50 + i * ilni2, (innerHeight) / 2 + neurontotysize * j - neurontotysize * lenj / 2);
-                ctx.lineTo(50 + (i + 1) * ilni2, (innerHeight) / 2 + neurontotysize * (j2) - neurontotysize * neuronindexes[i + 1].length / 2)
-                ctx.closePath();
-                ctx.strokeStyle = "rgba(9, 146, 198," + (Math.max(0, weight) * val * mynet.layers[i + 1].neurons[neuronindexes[i + 1][j2]].groupAnimationValue) + ")";
-                ctx.stroke();
+                networkCtx.beginPath();
+                networkCtx.moveTo(50 + i * ilni2, (innerHeight) / 2 + neurontotysize * j - neurontotysize * lenj / 2);
+                networkCtx.lineTo(50 + (i + 1) * ilni2, (innerHeight) / 2 + neurontotysize * (k) - neurontotysize * neuronIndexes[i + 1].length / 2)
+                networkCtx.closePath();
+                networkCtx.strokeStyle = "rgba(9, 146, 198," + (Math.max(0, weight) * val * currentNetwork.layers[i + 1].neurons[neuronIndexes[i + 1][k]].groupAnimationValue) + ")";
+                networkCtx.stroke();
             }
         }
     }
 }
-window.addEventListener("mouseup", function (e)
-{
-    mouseinf.x = e.offsetX;
-    mouseinf.y = e.offsetY;
-    mouseinf.down = false;
 
-});
-window.addEventListener("mousemove", function (e)
+function mouseMove(newx, newy)
 {
-    mousemove(e.offsetX, e.offsetY);
-});
-
-function mousemove(newx, newy)
-{
-    if (mouseinf.down && mouseinf.x <= ic.width && mouseinf.y <= ic.height)
+    if (neuronsInfo.down && neuronsInfo.x <= visibleDrawingCanvas.width && neuronsInfo.y <= visibleDrawingCanvas.height)
     {
-        ictx.save();
-        if (buttonsstatepen)
+        hiddenDrawingCtx.save();
+        if (buttonStateIsPen)
         {
-            ictx.globalCompositeOperation = "";
+            hiddenDrawingCtx.globalCompositeOperation = "";
         }
         else
         {
-            ictx.globalCompositeOperation = "destination-out";
+            hiddenDrawingCtx.globalCompositeOperation = "destination-out";
         }
-        ictx.filter = "blur(3px)";
-        ictx.lineWidth = 30;
-        ictx.strokeStyle = "rgb(9,146,198)";
-        ictx.lineJoin = "round";
-        ictx.lineCap = "round";
-        ictx.beginPath();
-        ictx.moveTo(mouseinf.x, mouseinf.y);
-        mouseinf.x = newx;
-        mouseinf.y = newy;
+        hiddenDrawingCtx.filter = "blur(3px)";
+        hiddenDrawingCtx.lineWidth = 25;
+        hiddenDrawingCtx.strokeStyle = "rgb(0,0,0)";
+        hiddenDrawingCtx.lineJoin = "round";
+        hiddenDrawingCtx.lineCap = "round";
+        hiddenDrawingCtx.beginPath();
+        hiddenDrawingCtx.moveTo(neuronsInfo.x, neuronsInfo.y);
+        neuronsInfo.x = newx;
+        neuronsInfo.y = newy;
 
-        ictx.lineTo(mouseinf.x, mouseinf.y);
-        ictx.closePath();
-        ictx.stroke();
-        ictx.restore();
-        var scale = (250 / 28);
-        for (var i = 0; i < 28 * 28; i++)
+        hiddenDrawingCtx.lineTo(neuronsInfo.x, neuronsInfo.y);
+        hiddenDrawingCtx.closePath();
+        hiddenDrawingCtx.stroke();
+        hiddenDrawingCtx.restore();
+        let scale = (250 / 28);
+        for (let i = 0; i < 28 * 28; i++)
         {
-            var x = i % 28 - 1;
-            var y = Math.floor(i / 28) - 1;
-            griddata[i] = ictx.getImageData(x * scale + 28 / 2, y * scale + 28 / 2, 1, 1).data[3] / 255;
+            let x = i % 28 - 1;
+            let y = Math.floor(i / 28) - 1;
+            gridData[i] = hiddenDrawingCtx.getImageData(x * scale + 28 / 2, y * scale + 28 / 2, 1, 1).data[3] / 255;
         }
 
-        rendergrid();
+        renderGrid();
 
-        var p = mynet.predict(griddata.map(Math.round));
-        //renderneurons();
+        currentNetwork.predict(gridData.map(Math.round));
     }
 }
 
 function render()
 {
-    renderneurons()
-    //ctx.fillStyle = "rgb(1,19,27)";
-    //ctx.fillRect(0, 0, cwidth, cheight);
+    renderNeurons();
     requestAnimationFrame(render);
 }

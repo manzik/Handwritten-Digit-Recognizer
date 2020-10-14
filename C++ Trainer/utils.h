@@ -1,4 +1,7 @@
 #pragma once
+#include <iostream>
+#include "config.h"
+#include "utils.h"
 
 class Stats
 {
@@ -23,4 +26,5 @@ void mergeData(
 void randomTransformPixelsDataArr(double*** pixelsDataArr, int count);
 
 double getExponentialDecayGetConstantK(int totalSamples);
+double getExponentialDecayLearningRate(int currentSample, int totalSamples, double k);
 double getExponentialDecayLearningRate(int currentSample, int totalSamples);

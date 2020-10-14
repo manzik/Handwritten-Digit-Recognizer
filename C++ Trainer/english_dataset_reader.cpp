@@ -1,15 +1,9 @@
-#include <iostream>
-#include <conio.h>
-#include <fstream>
-
-
-#include "config.h"
-#include "utils.h"
+#include "english_dataset_reader.h"
 
 using namespace std;
 
 void readMnist(string imagesPath, string labelsPath, double*** pixelsDataArr, int** labelsArr, int* count);
-
+void randomTransformPixelsDataArr(double*** pixelsDataArr, int count);
 
 void readEnglishDataset(double*** pixelsDataArr, int** labelsArr, int* count)
 {
@@ -50,7 +44,7 @@ int reverseInt(int i)
 
 // https://stackoverflow.com/a/33384846
 typedef unsigned char uchar;
-int* read_mnist_labels(string full_path, int& number_of_labels)
+int* readMnistLabels(string full_path, int& number_of_labels)
 {
 	auto reverseInt = [](int i)
 	{
@@ -87,6 +81,8 @@ int* read_mnist_labels(string full_path, int& number_of_labels)
 		throw runtime_error("Unable to open file `" + full_path + "`!");
 	}
 }
+
+// https://github.com/wichtounet/mnist
 void readMnist(string imagesPath, string labelsPath, double*** pixelsDataArr, int** labelsArr, int* count)
 {
 	ifstream file(imagesPath, ios::binary);
@@ -134,6 +130,67 @@ void readMnist(string imagesPath, string labelsPath, double*** pixelsDataArr, in
 	}
 
 	int dataCount = -1, imageSize = 28;
-	int* labels = read_mnist_labels(labelsPath, dataCount);
+	int* labels = readMnistLabels(labelsPath, dataCount);
 	*labelsArr = labels;
+}
+
+// Scales and moves the digits to a random location
+void randomTransformPixelsDataArr(double*** pixelsDataArr, int count)
+{
+	const double MINIMUM_SCALE = 0.7;
+	for (int i = 0; i < count; i++)
+	{
+		double* newPixelsData = new double[28 * 28];
+		double* oldPixelsData = (*pixelsDataArr)[i];
+
+		int digitImageTop = 28, digitImageLeft = 28, digitImageRight = -1, digitImageBottom = -1;
+		for (int y = 0; y < 28; y++)
+		{
+			for (int x = 0; x < 28; x++)
+			{
+				double pixelVal = oldPixelsData[x + y * 28];
+				if (pixelVal > 0)
+				{
+					if (x < digitImageLeft)
+						digitImageLeft = x;
+					if (x > digitImageRight)
+						digitImageRight = x;
+					if (y < digitImageTop)
+						digitImageTop = y;
+					if (y > digitImageBottom)
+						digitImageBottom = y;
+				}
+			}
+		}
+
+		int digitWidth = digitImageRight - digitImageLeft + 1;
+		int digitHeight = digitImageBottom - digitImageTop + 1;
+
+		int biggestDimension = digitWidth > digitHeight ? digitWidth : digitHeight;
+
+		// Find the scale that makes the digit fit the 28*28 grid of values.
+		double maxScale = digitWidth > digitHeight ? ((double)28 / digitWidth) : ((double)28 / digitHeight);
+
+		double scale = ((double)rand() / (RAND_MAX)) * (maxScale - MINIMUM_SCALE) + MINIMUM_SCALE; // Set scale to random value in the minimum and maximum value range
+		int marginX = (28 - (double)digitWidth * scale) * ((double)rand() / (RAND_MAX));
+		int marginY = (28 - (double)digitHeight * scale) * ((double)rand() / (RAND_MAX));
+
+		for (int y = 0; y < 28; y++)
+		{
+			for (int x = 0; x < 28; x++)
+			{
+				int oldPixelsX = round((double)x / scale - marginX) + digitImageLeft;
+				int oldPixelsY = round((double)y / scale - marginY) + digitImageTop;
+				double newPixelVal;
+				if (oldPixelsX < 0 || oldPixelsY < 0 || oldPixelsX >= 28 || oldPixelsY >= 28)
+					newPixelVal = 0;
+				else
+					newPixelVal = oldPixelsData[oldPixelsX + oldPixelsY * 28];
+				newPixelsData[x + y * 28] = newPixelVal;
+			}
+		}
+
+		(*pixelsDataArr)[i] = newPixelsData;
+		delete[] oldPixelsData;
+	}
 }

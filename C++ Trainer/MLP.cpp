@@ -12,239 +12,227 @@ class Connection;
 class Connection
 {
 public:
-	Neuron *From;
-	Neuron *To;
-	double Weight;
-	double ShouldAdd = 0;
+	Neuron *from;
+	Neuron *to;
+	double weight;
+	double shouldAdd = 0;
 };
 class Neuron
 {
 public:
-	Neuron()
-	{
-	}
+	Neuron() { }
 	Neuron(int nIndex)
 	{
-		Index = nIndex;
+		index = nIndex;
 	}
-	int Index;
-	double N = NAN; // Net value: Value of neuron before the activation function
-	double Value = NAN; // Value: Value of the neuron after the activation function
-	double J = NAN; // Current neuron's dN/dE
-	int InputsSize = 0;
-	vector<Connection*> Inputs;
-	int OutputsSize = 0;
-	vector<Connection*> Outputs;
+	int index;
+	double netValue = NAN; // Net value: value of neuron before the activation function
+	double value = NAN; // value: value of the neuron after the activation function
+	double j = NAN; // Current neuron's dN/dE
+	vector<Connection*> inputs;
+	vector<Connection*> outputs;
 };
 
 class DesiredOutput
 {
 public:
-	DesiredOutput()
-	{
-
-	}
+	int index = 0;
+	double value = 0;
 	DesiredOutput(int _index, double _value)
 	{
 		index = _index;
 		value = _value;
 	}
-	int index = 0;
-	double value = 0;
 };
 
 class MultilayerPerceptron
 {
 public:
-	double LearningRate;
+	double learningRate;
 
-	Neuron *Neurons;
-	int NeuronsSize = 0;
-	vector<Connection*> Connections;
-	int ConnectionsSize = 0;
-	MultilayerPerceptron(double LearningRate = 0.2)
+	Neuron *neurons;
+	int neuronsSize = 0;
+
+	vector<Connection*> connections;
+
+	MultilayerPerceptron(double learningRate = 0.2)
 	{
-		this->LearningRate = LearningRate;
+		this->learningRate = learningRate;
 	}
 
-	void CreateNeurons(int Count)
+	void createNeurons(int count)
 	{
-		Neurons = new Neuron[Count];
-		NeuronsSize = Count;
+		neurons = new Neuron[count];
+		neuronsSize = count;
 	}
 
-	void ConnectNeurons(int Index1, int Index2, double Weight)
+	void connectNeurons(int Index1, int Index2, double weight)
 	{
-		Connection *NewConnection = new Connection();
+		Connection *newConnection = new Connection();
 
-		NewConnection->Weight = Weight;
+		newConnection->weight = weight;
 
 
 		if (Index2 > Index1)
 		{
-			NewConnection->From = &(Neurons[Index1]);
-			NewConnection->To = &(Neurons[Index2]);
+			newConnection->from = &(neurons[Index1]);
+			newConnection->to = &(neurons[Index2]);
 
-			AddToNeuronOutputs(&Neurons[Index1], NewConnection);
-			AddToNeuronInputs(&Neurons[Index2], NewConnection);
+			addToNeuronOutputs(&neurons[Index1], newConnection);
+			addToNeuronInputs(&neurons[Index2], newConnection);
 		}
 		else
 		{
-			NewConnection->From = &(Neurons[Index2]);
-			NewConnection->To = &(Neurons[Index1]);
+			newConnection->from = &(neurons[Index2]);
+			newConnection->to = &(neurons[Index1]);
 
-			AddToNeuronOutputs(&Neurons[Index2], NewConnection);
-			AddToNeuronInputs(&Neurons[Index1], NewConnection);
+			addToNeuronOutputs(&neurons[Index2], newConnection);
+			addToNeuronInputs(&neurons[Index1], newConnection);
 		}
 
-		AddToConnections(NewConnection);
+		addToConnections(newConnection);
 	}
-	double GetNeuronValue(int Index)
+	double getNeuronValue(int index)
 	{
-		return Neurons[Index].Value;
+		return neurons[index].value;
 	}
-	void SetNeuronValue(int Index, double Value)
+	void setNeuronValue(int index, double value)
 	{
-		Neurons[Index].Value = Value;
+		neurons[index].value = value;
 	}
-	double SigmoidDerivative(double in)
+	double sigmoidDerivative(double in)
 	{
 		//return in > 0 ? 1 : 0; // ReLU?
-		double sig = Sigmoid(in);
+		double sig = sigmoid(in);
 
 		return sig*(1 - sig);
 	}
-	double Sigmoid(double in)
+	double sigmoid(double in)
 	{
 		//return in > 0 ? in : 0; // ReLU?
 		return 1 / (1 + exp(-in));
 	}
-	void ComputeOutput()
+	void computeOutput()
 	{
 
-		for (int i = 0; i < NeuronsSize; i++)
+		for (int i = 0; i < neuronsSize; i++)
 		{
 
-			Neuron &ThisNeuron = Neurons[i];
-			double TV = ThisNeuron.Value;
+			Neuron &thisNeuron = neurons[i];
+			double TV = thisNeuron.value;
 			if (TV != TV)
 			{
-				ThisNeuron.N = 0;
-				for (int i = 0; i < ThisNeuron.InputsSize; i++)
+				thisNeuron.netValue = 0;
+				for (int i = 0; i < thisNeuron.inputs.size(); i++)
 				{
-					ThisNeuron.N += ThisNeuron.Inputs[i]->From->Value*ThisNeuron.Inputs[i]->Weight;
+					thisNeuron.netValue += thisNeuron.inputs[i]->from->value*thisNeuron.inputs[i]->weight;
 				}
 
-				ThisNeuron.Value = Sigmoid(ThisNeuron.N);
+				thisNeuron.value = sigmoid(thisNeuron.netValue);
 			}
 
 		}
 	}
-	void ClearUp()
+	void cleanUp()
 	{
-		for (int i = 0; i < NeuronsSize; i++)
+		for (int i = 0; i < neuronsSize; i++)
 		{
-			Neurons[i].Value = NAN;
-			Neurons[i].J = NAN;
-			Neurons[i].N = NAN;
+			neurons[i].value = NAN;
+			neurons[i].j = NAN;
+			neurons[i].netValue = NAN;
 		}
 	}
-	void BackPropagate(DesiredOutput **DesiredOutputs, int DesiredOutputsLength)
+	void backPropagate(DesiredOutput **desiredOutputs, int desiredOutputsLength)
 	{
-		double TotalSum = 0;
-
 		// We compute last layer of the neural network separately.
-		for (int i = 0; i < DesiredOutputsLength; i++)
+		for (int i = 0; i < desiredOutputsLength; i++)
 		{
-			DesiredOutput &DesiredOutput = *(DesiredOutputs[i]);
-			Neuron &TargetNeuron = Neurons[DesiredOutput.index];
+			DesiredOutput &desiredOutput = *(desiredOutputs[i]);
+			Neuron &targetNeuron = neurons[desiredOutput.index];
 
 			/*
 				W: Target weight we want to calculate the derivates for
-				V0: Value of the neuron weight connection starts from (after activation)
-				V1: Value of second neuron after the activation function
+				V0: value of the neuron weight connection starts from (after activation)
+				V1: value of second neuron after the activation function
 				A: Activation function (sigmoid in our case)
-				N: Value of the neuron V1 before passing to the activation function
+				netValue: value of the neuron V1 before passing to the activation function
 				T: Output neuron's desired output value
 				
-				N = V0 * W
-				V1 = A(N)
+				netValue = V0 * W
+				V1 = A(netValue)
 				E = 0.5 * (T - V1) ^ 2
 				
 				dE/dV1 = 2 * 0.5 * (T - V1) * (-1) = (V1 - T)
-				dV1/dN = A'(N)
+				dV1/dN = A'(netValue)
 				dN/dW = V0
 
-				J: A variable for keeping track of dE/dN up until that neuron (moving backwards) in the network so we don't recalculate.
+				j: A variable for keeping track of dE/dN up until that neuron (moving backwards) in the network so we don't recalculate.
 				For the last layer we have:
-				J = dE/dN = dE/dV1 * dV1/dN = (T - V1) * A'(N)
+				j = dE/dN = dE/dV1 * dV1/dN = (T - V1) * A'(netValue)
 
-				dE/dW = dE/dV1 * dV1/dN * dN/dW =  J * dN/dW = J * V0
+				dE/dW = dE/dV1 * dV1/dN * dN/dW =  j * dN/dW = j * V0
 
-				So we calculate J for the last (output) layer's neurons.
+				So we calculate j for the last (output) layer's neurons.
 				
-				Then for each layer's neurons calculate dE/dW from J and V0 (then do += -dE/dW to minimize E). BUT we need to apply
+				Then for each layer's neurons calculate dE/dW from j and V0 (then do += -dE/dW to minimize E). BUT we need to apply
 				the value changes later so we save them at shouldAdd and adjust weights in the end.
-				And Also calculate current J from avg of output connections' weight and J and current N
+				And Also calculate current j from avg of output connections' weight and j and current netValue
 			*/
 
-			TargetNeuron.J = SigmoidDerivative(TargetNeuron.N) * (DesiredOutput.value - TargetNeuron.Value);
+			targetNeuron.j = sigmoidDerivative(targetNeuron.netValue) * (targetNeuron.value - desiredOutput.value);
 		}
-		for (int i = NeuronsSize - 1; i >= 0; i--)
+		for (int i = neuronsSize - 1; i >= 0; i--)
 		{
-			Neuron &TargetNeuron = Neurons[i];
-			double TJ = TargetNeuron.J;
+			Neuron &targetNeuron = neurons[i];
+			double TJ = targetNeuron.j;
 			if (TJ != TJ)
 			{
-				// let J be the J for current neuron and i be set if indexes for neurons current is connected to in the next layer.
+				// let j be the j for current neuron and i be set if indexes for neurons current is connected to in the next layer.
 				// Calculating for specific connection i: dEi/dV1 = dEi/dNi * dNi/dV1 = Ji * wi
 				// But we need to consider all outgoing weights the change affects for minimzing error so:
 				// dE/dV1 = avg(dE1/dV1, dE/dV1, dE2/dV1, ..., dEn-1/dV1, dEn/dV1) 
-				// AvgWj is dE/dV1
-				double AvgWj = 0;
-				for (int j = 0; j < TargetNeuron.OutputsSize; j++)
+				// avgWj is dE/dV1
+				double avgWj = 0;
+				for (int j = 0; j < targetNeuron.outputs.size(); j++)
 				{
-					// dE/dW = dE/dV1 * dV1/dN * dN/dW =  J * dN/dW = J * V0
-					// deltaW = -dE/dW * learningRate; To minimize E
-					TargetNeuron.Outputs[j]->ShouldAdd += -TargetNeuron.Value * TargetNeuron.Outputs[j]->To->J * LearningRate;
+					// dE/dW = dE/dV1 * dV1/dN * dN/dW =  j * dN/dW = j * V0
+					// deltaW = -dE/dW * learningRate; to minimize E
+					targetNeuron.outputs[j]->shouldAdd += -targetNeuron.value * targetNeuron.outputs[j]->to->j * learningRate;
 
 					
-					AvgWj += TargetNeuron.Outputs[j]->To->J * TargetNeuron.Outputs[j]->Weight;
+					avgWj += targetNeuron.outputs[j]->to->j * targetNeuron.outputs[j]->weight;
 				}
-				AvgWj /= TargetNeuron.OutputsSize;
+				avgWj /= targetNeuron.outputs.size();
 
-				// J =  dE/dN = dV1/dN  * dE/dV1 = A'(N) * avg(dE1/dV1, dE/dV1, dE2/dV1, ..., dEn-1/dV1, dEn/dV1) 
-				if (i > 0) // Don't really need to calculate J for the first input layer
+				// j =  dE/dN = dV1/dN  * dE/dV1 = A'(netValue) * avg(dE1/dV1, dE/dV1, dE2/dV1, ..., dEn-1/dV1, dEn/dV1) 
+				if (i > 0) // Don't really need to calculate j for the first input layer
 				{
-					// // J =  dE/dN = dV1/dN  * dE/dV1 = A'(N) * avg(dE1/dV1, dE/dV1, dE2/dV1, ..., dEn-1/dV1, dEn/dV1) 
-					TargetNeuron.J = SigmoidDerivative(TargetNeuron.N) * AvgWj;
+					// j =  dE/dN = dV1/dN  * dE/dV1 = A'(netValue) * avg(dE1/dV1, dE/dV1, dE2/dV1, ..., dEn-1/dV1, dEn/dV1) 
+					targetNeuron.j = sigmoidDerivative(targetNeuron.netValue) * avgWj;
 				}
 
 			}
 		}
-		for (int i = 0; i < ConnectionsSize; i++)
+		for (int i = 0; i < connections.size(); i++)
 		{
-			Connections[i]->Weight += Connections[i]->ShouldAdd;
-			Connections[i]->ShouldAdd = 0;
+			connections[i]->weight += connections[i]->shouldAdd;
+			connections[i]->shouldAdd = 0;
 		}
 	}
 
 public:
-	void AddToNeuronInputs(Neuron *TargetNeuron, Connection *connection)
+	void addToNeuronInputs(Neuron *targetNeuron, Connection *connection)
 	{
-		TargetNeuron->Inputs.push_back(connection);
-		TargetNeuron->InputsSize++;
+		targetNeuron->inputs.push_back(connection);
 	}
 
-	void AddToNeuronOutputs(Neuron *TargetNeuron, Connection *connection)
+	void addToNeuronOutputs(Neuron *targetNeuron, Connection *connection)
 	{
-		TargetNeuron->Outputs.push_back(connection);
-		TargetNeuron->OutputsSize++;
+		targetNeuron->outputs.push_back(connection);
 	}
 
-	void AddToConnections(Connection *Item)
+	void addToConnections(Connection *item)
 	{
-		Connections.push_back(Item);
-		ConnectionsSize++;
+		connections.push_back(item);
 	}
 };
