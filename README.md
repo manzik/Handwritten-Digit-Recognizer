@@ -1,13 +1,16 @@
 # Handwritten Digit Recognizer
 
-A feedforward fully-connected neural network (multilayer perceptron) project trained to detect English and Persian handwritten digits from an image. 
+A neural network (multilayer perceptron) project and library written from scratch and without using any 3rd party libraries for detecting English and Persian handwritten digits from an image. 
 
  __Online demo for the neural network's demonstration:__
 
 
 [http://github.manzik.com/Handwritten-Digit-Recognizer/js-interactive/](http://github.manzik.com/Handwritten-Digit-Recognizer/js-interactive/)
 
-# Method
+__C++ source code for training the neural network__
+[http://github.manzik.com/Handwritten-Digit-Recognizer/js-interactive/](http://github.manzik.com/Handwritten-Digit-Recognizer/cpp-training/)
+
+# Methods
 This repository contains code for computing and optimizing a neural network's output for digits using backpropagation in both C++ and Javascript.   
 
 - Datasets used:
