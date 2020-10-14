@@ -8,7 +8,7 @@ A Deep Neural Network project coded from scratch trained to classify English and
 [http://github.manzik.com/Handwritten-Digit-Recognizer/js-interactive/](http://github.manzik.com/Handwritten-Digit-Recognizer/js-interactive/)
 
 __C++ source code for training the neural network__
-[http://github.manzik.com/Handwritten-Digit-Recognizer/js-interactive/](http://github.manzik.com/Handwritten-Digit-Recognizer/cpp-training/)
+[http://github.com/manzik/Handwritten-Digit-Recognizer/cpp-training/](http://github.com/manzik/Handwritten-Digit-Recognizer/cpp-training/)
 
 # Methods
 This repository contains the code for computing and then optimizing a neural network's output for digits using backpropagation in both C++ and Javascript.   
