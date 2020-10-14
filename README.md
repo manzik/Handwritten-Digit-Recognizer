@@ -1,4 +1,4 @@
-# Persian Handwritten Digit Recognizer
+# Handwritten Digit Recognizer
 
 A feedforward fully-connected neural network (multilayer perceptron) project trained to detect English and Persian handwritten digits from an image. 
 
