@@ -5,7 +5,7 @@ A feedforward fully-connected neural network (multilayer perceptron) project tra
  __Online demo for the neural network's demonstration:__
 
 
-[http://github.manzik.com/Handwritten-Digit-Recognizer/JS%20Interactive/](http://github.manzik.com/Handwritten-Digit-Recognizer/JS%20Interactive/)
+[http://github.manzik.com/Handwritten-Digit-Recognizer/js-interactive/](http://github.manzik.com/Handwritten-Digit-Recognizer/js-interactive/)
 
 # Method
 This repository contains code for computing and optimizing a neural network's output for digits using backpropagation in both C++ and Javascript.   

@@ -1,0 +1,102 @@
+<!DOCYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="css/main.css" />
+    <script src="MLP.js" defer="defer"></script>
+    <script src="main.js" defer="defer"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="lib/lz-string.min.js"></script>
+</head>
+<body>
+
+    <div class="main-canvas-container">
+        <canvas id="network-canvas"></canvas>
+    </div>
+    <div class="left-panel-container">
+        <div class="left-panel">
+            <canvas height="250" width="250" id="hidden-draw-canvas"></canvas>
+            <canvas height="250" width="250" id="visible-draw-canvas"></canvas>
+            <div class="canvas-toolbar">
+                <button class="tool selected" onclick="penButtonClick();"><img src="images/edit.svg" />Pen</button>
+                <button class="tool" onclick="eraseButtonClick();"><img src="images/eraser.svg" />Eraser</button>
+                <button class="tool" onclick="clearButtonClick();">Clear</button>
+            </div>
+            <span style="top: 255px; position: relative; text-align: center;">&nbsp;Pretrained Parameters Language: </span><br/>
+            <div class="canvas-toolbar" id="langs-toolbar">
+                <button class="tool selected" onclick="networkLangChange('en')">English</button>
+                <button class="tool" onclick="networkLangChange('fa')">Persian</button>
+            </div>
+            <span id="info">
+                This project demonstrates a fully-connected feedforward neural network trained to detect numbers in English and Persian. The NN is trained in C++ for faster performance. <br/>You can access the C++ source code <a target="_blank" href="https://github.com/manzik/Handwritten-Digit-Recognizer/tree/master/cpp-trainer">here</a>.
+                <br /><br />
+                Project's github:
+                <br />
+                <a target="_blank" href="https://github.com/manzik/Handwritten-Digit-Recognizer">https://github.com/manzik/Handwritten-Digit-Recognizer</a>
+                <br/><br/>
+                You can click on a number below to load a sample handwritten digit:
+            </span>
+
+            <table class="sample-digits-table" border="1">
+                <tr>
+                    <td onclick="drawDemo(0)"><img src="digit images/english/0.png" /></td>
+                    <td onclick="drawDemo(1)"><img src="digit images/english/1.png" /></td>
+                    <td onclick="drawDemo(2)"><img src="digit images/english/2.png" /></td>
+                    <td onclick="drawDemo(3)"><img src="digit images/english/3.png" /></td>
+                    <td onclick="drawDemo(4)"><img src="digit images/english/4.png" /></td>
+                    <td onclick="drawDemo(5)"><img src="digit images/english/5.png" /></td>
+                    <td onclick="drawDemo(6)"><img src="digit images/english/6.png" /></td>
+                    <td onclick="drawDemo(7)"><img src="digit images/english/7.png" /></td>
+                    <td onclick="drawDemo(8)"><img src="digit images/english/8.png" /></td>
+                    <td onclick="drawDemo(9)"><img src="digit images/english/9.png" /></td>
+                </tr>
+                <tr>
+                    <td onclick="drawDemo(0)"><img src="digit images/persian/0.png" /></td>
+                    <td onclick="drawDemo(1)"><img src="digit images/persian/1.png" /></td>
+                    <td onclick="drawDemo(2)"><img src="digit images/persian/2.png" /></td>
+                    <td onclick="drawDemo(3)"><img src="digit images/persian/3.png" /></td>
+                    <td onclick="drawDemo(4)"><img src="digit images/persian/4.png" /></td>
+                    <td onclick="drawDemo(5)"><img src="digit images/persian/5.png" /></td>
+                    <td onclick="drawDemo(6)"><img src="digit images/persian/6.png" /></td>
+                    <td onclick="drawDemo(7)"><img src="digit images/persian/7.png" /></td>
+                    <td onclick="drawDemo(8)"><img src="digit images/persian/8.png" /></td>
+                    <td onclick="drawDemo(9)"><img src="digit images/persian/9.png" /></td>
+                </tr>
+            </table>
+            <span id="info">
+                <br/>
+                <small>
+                Note: The number of neurons and connections in this demonstration is not representative of the actual neural network.<br/><br/> Number of neurons in each layer of the neural network: { 784, 512, 512, 10 }
+                </small>
+                <br/>
+                &nbsp;
+            </span>
+        </div>
+    </div>
+    <div style="display:none;">
+        <img src="digit images/english/0.png" id="english-number-0" />
+        <img src="digit images/english/1.png" id="english-number-1" />
+        <img src="digit images/english/2.png" id="english-number-2" />
+        <img src="digit images/english/3.png" id="english-number-3" />
+        <img src="digit images/english/4.png" id="english-number-4" />
+        <img src="digit images/english/5.png" id="english-number-5" />
+        <img src="digit images/english/6.png" id="english-number-6" />
+        <img src="digit images/english/7.png" id="english-number-7" />
+        <img src="digit images/english/8.png" id="english-number-8" />
+        <img src="digit images/english/9.png" id="english-number-9" />
+
+        <img src="digit images/persian/0.png" id="persian-number-0" />
+        <img src="digit images/persian/1.png" id="persian-number-1" />
+        <img src="digit images/persian/2.png" id="persian-number-2" />
+        <img src="digit images/persian/3.png" id="persian-number-3" />
+        <img src="digit images/persian/4.png" id="persian-number-4" />
+        <img src="digit images/persian/5.png" id="persian-number-5" />
+        <img src="digit images/persian/6.png" id="persian-number-6" />
+        <img src="digit images/persian/7.png" id="persian-number-7" />
+        <img src="digit images/persian/8.png" id="persian-number-8" />
+        <img src="digit images/persian/9.png" id="persian-number-9" />
+    </div>
+</body>
+</html>
