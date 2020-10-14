@@ -2,13 +2,11 @@
 
 A Deep Neural Network project coded from scratch trained to classify English and Persian handwritten digits from image without use of any third-party libraries using C++ and Javascript.
 
- __Online demo for the neural network's demonstration:__
-
-
+ __Online demo for the neural network's demonstration:__  
 [http://github.manzik.com/Handwritten-Digit-Recognizer/js-interactive/](http://github.manzik.com/Handwritten-Digit-Recognizer/js-interactive/)
 
-__C++ source code for training the neural network__
-[http://github.com/manzik/Handwritten-Digit-Recognizer/cpp-trainer/](http://github.com/manzik/Handwritten-Digit-Recognizer/cpp-trainer/)
+__C++ source code for training the neural network:__  
+[https://github.com/manzik/Handwritten-Digit-Recognizer/tree/master/cpp-trainer](https://github.com/manzik/Handwritten-Digit-Recognizer/tree/master/cpp-trainer)
 
 # Methods
 This repository contains the code for computing and then optimizing a neural network's output for digits using backpropagation in both C++ and Javascript.   
