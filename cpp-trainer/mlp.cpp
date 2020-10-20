@@ -12,8 +12,8 @@ class Connection;
 class Connection
 {
 public:
-	Neuron *from;
-	Neuron *to;
+	Neuron* from;
+	Neuron* to;
 	double weight;
 	double shouldAdd = 0;
 };
@@ -50,7 +50,7 @@ class MultilayerPerceptron
 public:
 	double learningRate;
 
-	Neuron *neurons;
+	Neuron* neurons;
 	int neuronsSize = 0;
 
 	vector<Connection*> connections;
@@ -68,7 +68,7 @@ public:
 
 	void connectNeurons(int Index1, int Index2, double weight)
 	{
-		Connection *newConnection = new Connection();
+		Connection* newConnection = new Connection();
 
 		newConnection->weight = weight;
 
@@ -105,7 +105,7 @@ public:
 		//return in > 0 ? 1 : 0; // ReLU?
 		double sig = sigmoid(in);
 
-		return sig*(1 - sig);
+		return sig * (1 - sig);
 	}
 	double sigmoid(double in)
 	{
@@ -142,7 +142,7 @@ public:
 			neurons[i].netValue = NAN;
 		}
 	}
-	void backPropagate(DesiredOutput **desiredOutputs, int desiredOutputsLength)
+	void backPropagate(DesiredOutput** desiredOutputs, int desiredOutputsLength)
 	{
 		// We compute last layer of the neural network separately.
 		for (int i = 0; i < desiredOutputsLength; i++)
@@ -221,17 +221,17 @@ public:
 	}
 
 public:
-	void addToNeuronInputs(Neuron *targetNeuron, Connection *connection)
+	void addToNeuronInputs(Neuron* targetNeuron, Connection* connection)
 	{
 		targetNeuron->inputs.push_back(connection);
 	}
 
-	void addToNeuronOutputs(Neuron *targetNeuron, Connection *connection)
+	void addToNeuronOutputs(Neuron* targetNeuron, Connection* connection)
 	{
 		targetNeuron->outputs.push_back(connection);
 	}
 
-	void addToConnections(Connection *item)
+	void addToConnections(Connection* item)
 	{
 		connections.push_back(item);
 	}

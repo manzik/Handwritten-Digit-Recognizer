@@ -11,11 +11,11 @@
 // Training scheduling parameters. A formula similar to exponential decay will be used.
 
 #define ENGLISH_PARAMETERS_SAVE_PATH "../js-interactive/netdata-english.json.lzstring"
-#define ENGLISH_PROCESS_EPOCHS 25
-#define ENGLISH_STARTING_LEARNING_RATE 0.2
-#define ENGLISH_ENDING_LEARNING_RATE 0.05
+#define ENGLISH_PROCESS_EPOCHS 30
+#define ENGLISH_STARTING_LEARNING_RATE 0.3
+#define ENGLISH_ENDING_LEARNING_RATE 0.001
 
-#define PERSIAN_PARAMETERS_SAVE_PATH "../js-nteractive/netdata-persian.json.lzstring"
+#define PERSIAN_PARAMETERS_SAVE_PATH "../js-interactive/netdata-persian.json.lzstring"
 #define PERSIAN_PROCESS_EPOCHS 25
 #define PERSIAN_STARTING_LEARNING_RATE 0.2
 #define PERSIAN_ENDING_LEARNING_RATE 0.05

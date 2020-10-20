@@ -25,7 +25,7 @@ We then split the data into 90% for the train and 10% for test data.
     - Now we can make predictions using the pretrained parameters based on user's handwritten images drawn in a canvas inside their browser.
 
 # Results
-We achieve __~95%__ and __~92%__ accuracy on test data for English and Persian handwritten digit detection respectively.
+We achieve __~96%__ and __~92%__ accuracy on test data for English and Persian handwritten digit detection respectively.
 ```bash
 Initializing
 Making a neural network with 1818 connections
@@ -34,8 +34,8 @@ Training using the dataset for the English language
 Reading the dataset..
 Done reading the dataset (loaded 70000 samples)..
 Training..
-Learning rate formula (with domain 0 to 1750000): 0.2*1.00001^(-0.0792172*x)
-=============== EPOCH 1/25 ===============
+Learning rate formula (with domain 0 to 2100000): 0.3*1.00001^(-0.27161*x)
+=============== EPOCH 1/30 ===============
 
 ------------ DEBUG ------------
 Data type: Testing Data
@@ -69,19 +69,19 @@ Input Neurons:
 . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 Output Neurons:
-0.0117885 0.000424332 0.0826226 0.000127434 0.0420924 0.0827613 0.127265 9.65009e-05 0.0104568 0.00392281
-Ground Truth, NN Answer (confidence):   5, 6 (0.127265)
+0.0203967 6.18765e-06 0.0142853 9.40693e-05 0.0725114 0.00455414 0.065087 8.93848e-06 0.00106714 0.000182227
+Ground Truth, NN Answer (confidence):   5, 4 (0.0725114)
 ------------ TRAIN ------------
 Used: 1800
-Loss (MSE): 0.0792671
-Accuracy: 40.5556%
+Loss (MSE): 0.0930594
+Accuracy: 31.7778%
 ------------ TEST ------------
 Used: 201
-Loss (MSE): 0.0946065
-Accuracy: 41.791%
+Loss (MSE): 0.122383
+Accuracy: 27.8607%
 ------------------------------
-Total samples Seen/Remaining: 2000/1750000
-Learning Rate: 0.199683
+Total samples Seen/Remaining: 2000/2100000
+Learning Rate: 0.298375
 ------------------------------
 
 <...more iterations>
@@ -118,29 +118,28 @@ Input Neurons:
 . . . . . . . . . . . . . . . . @ @ @ @ . . . . . . . .
 . . . . . . . . . . . . . . . . . @ @ @ . . . . . . . .
 Output Neurons:
-5.55072e-05 2.14186e-05 0.000221989 0.000548984 0.0161675 0.000568514 2.04476e-05 0.0459686 2.8843e-05 0.897582
-Ground Truth, NN Answer (confidence):   9, 9 (0.897582)
+1.79785e-07 0.000163668 0.000321924 0.000577478 0.0715933 0.000590554 9.86376e-06 0.0169101 9.24018e-05 0.960976
+Ground Truth, NN Answer (confidence):   9, 9 (0.960976)
 ------------ TRAIN ------------
 Used: 1800
-Loss (MSE): 0.00508778
-Accuracy: 97.4444%
+Loss (MSE): 0.00471855
+Accuracy: 97.2778%
 ------------ TEST ------------
 Used: 200
-Loss (MSE): 0.00825342
+Loss (MSE): 0.00675072
 Accuracy: 96%
 ------------------------------
-Total samples Seen/Remaining: 1746000/1750000
-Learning Rate: 0.00504234
+Total samples Seen/Remaining: 2096000/2100000
+Learning Rate: 0.00101092
 ------------------------------
 
-Done training. Elapsed training seconds: 18142.4
+Done training. Elapsed training seconds: 22190.9
 Testing..
-Training data MSE: 0.00527851
-Training data accuracy: 97.3254%
+Training data MSE: 0.00464235
+Training data accuracy: 97.6381%
 
-Testing data MSE: 0.0073592
-Testing data accuracy: 95.7857%
+Testing data MSE: 0.00707453
+Testing data accuracy: 96.0571%
 Enter a character to exit.
-
 
 ```

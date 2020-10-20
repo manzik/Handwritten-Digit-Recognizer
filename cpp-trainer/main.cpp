@@ -21,7 +21,7 @@
 #include "utils.h"
 #include "english_dataset_reader.h"
 #include "persian_dataset_reader.h"
-#include "mlp.cpp"
+#include "MLP.cpp"
 
 using namespace std;
 
@@ -46,7 +46,7 @@ int main()
 	cout << "Initializing" << "\n";
 
 	// For reproducibility
-	srand(43);
+	srand(45);
 
 	mynet = MultilayerPerceptron(STARTING_LEARNING_RATE);
 	int NeuronLayersCount = 4;
@@ -196,7 +196,7 @@ void processNNUsingData(MultilayerPerceptron *neuralNet, double* inputNeurons, i
 
 		// Perform backpropagation and cleanup the backpropagation resources
 		int dosslen = 10;
-		DesiredOutput** desiredOutputs = new DesiredOutput * [dosslen];
+		DesiredOutput** desiredOutputs = new DesiredOutput *[dosslen];
 		for (int i = 0; i < dosslen; i++)
 		{
 			desiredOutputs[i] = new DesiredOutput(neuralNet->neuronsSize - 10 + i, ((i == outputAnswer) ? 1 : 0));
