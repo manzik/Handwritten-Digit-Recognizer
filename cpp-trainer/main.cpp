@@ -21,7 +21,7 @@
 #include "utils.h"
 #include "english_dataset_reader.h"
 #include "persian_dataset_reader.h"
-#include "MLP.cpp"
+#include "mlp.cpp"
 
 using namespace std;
 
